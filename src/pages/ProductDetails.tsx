@@ -86,7 +86,7 @@ const ProductDetails = () => {
             Início
           </Link>
           <span>/</span>
-          <Link to="/#produtos" className="transition-colors hover:text-[#d4af6e]">
+          <Link to="/produtos" className="transition-colors hover:text-[#d4af6e]">
             Produtos
           </Link>
           <span>/</span>
@@ -96,11 +96,7 @@ const ProductDetails = () => {
         <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
           <section className="space-y-4">
             <div className="relative overflow-hidden rounded-[2rem] border border-[#252525] bg-[#141414]">
-              <img
-                src={images[selectedImage]}
-                alt={product.name}
-                className="aspect-[4/5] w-full object-cover"
-              />
+              <img src={images[selectedImage]} alt={product.name} className="aspect-[4/5] w-full object-cover" />
               <div className="absolute left-5 top-5 flex flex-wrap gap-2">
                 <span className="rounded-full border border-[#d4af6e]/25 bg-black/55 px-4 py-2 text-xs uppercase tracking-[0.2em] text-[#f0cf93] backdrop-blur-sm">
                   {product.category}
@@ -131,11 +127,11 @@ const ProductDetails = () => {
 
           <section className="space-y-6">
             <Link
-              to="/"
+              to="/produtos"
               className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-[#d4af6e]"
             >
               <ChevronLeft className="h-4 w-4" />
-              Voltar para a loja
+              Voltar para o catálogo
             </Link>
 
             <div>

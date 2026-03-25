@@ -1,4 +1,5 @@
 import heroImage from "@/assets/hero-fitness.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
 export const DEFAULT_HERO_IMAGE = heroImage;
 
@@ -7,7 +8,11 @@ export type StoreSettings = {
   heroDescription: string;
 };
 
-const STORAGE_KEY = "lais-fitness-store-settings";
+type StoreSettingsRow = {
+  id: string;
+  hero_images: string[] | null;
+  hero_description: string | null;
+};
 
 const defaultSettings: StoreSettings = {
   heroImages: [DEFAULT_HERO_IMAGE],
@@ -15,34 +20,39 @@ const defaultSettings: StoreSettings = {
     "Roupas fitness com caimento impecável, visual sofisticado e compra simples pelo WhatsApp.",
 };
 
+const normalizeSettings = (row?: Partial<StoreSettingsRow> | null): StoreSettings => ({
+  heroImages:
+    row?.hero_images && row.hero_images.length > 0
+      ? row.hero_images.filter(Boolean)
+      : defaultSettings.heroImages,
+  heroDescription: row?.hero_description?.trim() || defaultSettings.heroDescription,
+});
+
 export const getStoreSettings = async () => {
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultSettings));
+  const { data, error } = await supabase
+    .from("store_settings")
+    .select("id, hero_images, hero_description")
+    .eq("id", "main")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erro ao carregar configuracoes da loja:", error);
     return defaultSettings;
   }
 
-  try {
-    const parsed = JSON.parse(stored) as Partial<StoreSettings>;
-    const normalized: StoreSettings = {
-      heroImages:
-        parsed.heroImages && parsed.heroImages.length > 0
-          ? parsed.heroImages.filter(Boolean)
-          : defaultSettings.heroImages,
-      heroDescription: parsed.heroDescription?.trim() || defaultSettings.heroDescription,
-    };
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-    return normalized;
-  } catch {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultSettings));
-    return defaultSettings;
-  }
+  return normalizeSettings(data as StoreSettingsRow | null);
 };
 
 export const saveStoreSettings = async (settings: StoreSettings) => {
-  const normalized: StoreSettings = {
-    heroImages: settings.heroImages.filter(Boolean),
-    heroDescription: settings.heroDescription.trim() || defaultSettings.heroDescription,
+  const normalized = {
+    id: "main",
+    hero_images: settings.heroImages.filter(Boolean),
+    hero_description: settings.heroDescription.trim() || defaultSettings.heroDescription,
   };
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+
+  const { error } = await supabase.from("store_settings").upsert(normalized, { onConflict: "id" });
+
+  if (error) {
+    throw error;
+  }
 };

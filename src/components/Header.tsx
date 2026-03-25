@@ -23,10 +23,14 @@ const Header = () => {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          {["Produtos", "Sobre", "Contato"].map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase()}`}
+          {[
+            { label: "Produtos", href: "/produtos" },
+            { label: "Sobre", href: "/#sobre" },
+            { label: "Contato", href: "/#contato" },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              to={item.href}
               className="text-sm font-medium tracking-[0.22em] transition-colors"
               style={{ color: "#777" }}
               onMouseEnter={(e) => {
@@ -36,8 +40,8 @@ const Header = () => {
                 e.currentTarget.style.color = "#777";
               }}
             >
-              {item}
-            </a>
+              {item.label}
+            </Link>
           ))}
         </nav>
 
@@ -97,12 +101,16 @@ const Header = () => {
             style={{ borderBottom: "1px solid #1e1e1e", background: "#0d0d0d" }}
           >
             <nav className="flex flex-col gap-4 px-4 py-4">
-              {["produtos", "sobre", "contato"].map((item) => (
-                <a
-                  key={item}
-                  href={`#${item}`}
+              {[
+                { label: "Produtos", href: "/produtos" },
+                { label: "Sobre", href: "/#sobre" },
+                { label: "Contato", href: "/#contato" },
+              ].map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.href}
                   onClick={() => setMenuOpen(false)}
-                  className="text-sm font-medium capitalize tracking-[0.18em] transition-colors"
+                  className="text-sm font-medium tracking-[0.18em] transition-colors"
                   style={{ color: "#666" }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = "#d4af6e";
@@ -111,8 +119,8 @@ const Header = () => {
                     e.currentTarget.style.color = "#666";
                   }}
                 >
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
-                </a>
+                  {item.label}
+                </Link>
               ))}
             </nav>
           </motion.div>

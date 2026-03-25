@@ -9,6 +9,7 @@ import CartDrawer from "@/components/CartDrawer";
 import Index from "./pages/Index.tsx";
 import AdminLogin from "./pages/AdminLogin.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
+import ProductCatalog from "./pages/ProductCatalog.tsx";
 import ProductDetails from "./pages/ProductDetails.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -25,6 +26,7 @@ const App = () => (
             <CartDrawer />
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/produtos" element={<ProductCatalog />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/:slug" element={<ProductDetails />} />

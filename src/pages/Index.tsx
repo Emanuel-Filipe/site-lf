@@ -10,7 +10,7 @@ const Index = () => {
     <div className="min-h-screen">
       <Header />
       <HeroSection />
-      <ProductGrid />
+      <ProductGrid mode="preview" />
       <AboutSection />
       <Footer />
       <WhatsAppButton />

@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.4"
   }
@@ -17,41 +15,74 @@ export type Database = {
       products: {
         Row: {
           active: boolean
+          availability: "disponivel" | "encomenda"
           category: string
           colors: string[] | null
           created_at: string
           description: string | null
           id: string
           image_url: string | null
+          images: string[] | null
           name: string
           price: number
           sizes: string[] | null
+          slug: string
           updated_at: string
         }
         Insert: {
           active?: boolean
+          availability?: "disponivel" | "encomenda"
           category?: string
           colors?: string[] | null
           created_at?: string
           description?: string | null
           id?: string
           image_url?: string | null
+          images?: string[] | null
           name: string
           price: number
           sizes?: string[] | null
+          slug: string
           updated_at?: string
         }
         Update: {
           active?: boolean
+          availability?: "disponivel" | "encomenda"
           category?: string
           colors?: string[] | null
           created_at?: string
           description?: string | null
           id?: string
           image_url?: string | null
+          images?: string[] | null
           name?: string
           price?: number
           sizes?: string[] | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      store_settings: {
+        Row: {
+          created_at: string
+          hero_description: string | null
+          hero_images: string[] | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hero_description?: string | null
+          hero_images?: string[] | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hero_description?: string | null
+          hero_images?: string[] | null
+          id?: string
           updated_at?: string
         }
         Relationships: []
@@ -97,8 +128,7 @@ export type Database = {
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof DatabaseWithoutInternals, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
@@ -119,10 +149,8 @@ export type Tables<
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R

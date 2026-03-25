@@ -33,6 +33,7 @@ import {
   saveProduct,
   slugifyProductName,
 } from "@/lib/products";
+import { uploadImagesToStorage } from "@/lib/storage";
 import { DEFAULT_HERO_IMAGE, getStoreSettings, saveStoreSettings } from "@/lib/storeSettings";
 
 const CATEGORIES = ["Conjuntos", "Leggings", "Tops", "Shorts"];
@@ -42,22 +43,6 @@ const parseSizes = (value: string) =>
     .split(",")
     .map((item) => item.trim().toUpperCase())
     .filter(Boolean);
-
-const readFilesAsDataUrls = async (files: FileList | null) => {
-  if (!files || files.length === 0) return [];
-
-  return Promise.all(
-    Array.from(files).map(
-      (file) =>
-        new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result));
-          reader.onerror = () => reject(new Error("Falha ao ler a imagem."));
-          reader.readAsDataURL(file);
-        })
-    )
-  );
-};
 
 const moveItemToFront = (items: string[], indexToMove: number) => {
   const selected = items[indexToMove];
@@ -103,6 +88,12 @@ const AdminDashboard = () => {
     setHeroImages(settingsData.heroImages);
     setHeroDescription(settingsData.heroDescription);
   }, [settingsData]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/admin/login");
+    }
+  }, [authLoading, navigate, user]);
 
   const saveSettingsMutation = useMutation({
     mutationFn: async () => {
@@ -189,13 +180,14 @@ const AdminDashboard = () => {
 
   const handleProductImagesChange = async (files: FileList | null) => {
     try {
-      const uploadedImages = await readFilesAsDataUrls(files);
+      const uploadedImages = await uploadImagesToStorage(files, "products");
       if (uploadedImages.length === 0) return;
 
       setForm((current) => ({
         ...current,
         images: [...current.images, ...uploadedImages],
       }));
+      toast.success("Imagens do produto enviadas com sucesso.");
     } catch {
       toast.error("Não foi possível carregar as imagens selecionadas.");
     }
@@ -203,10 +195,11 @@ const AdminDashboard = () => {
 
   const handleHeroImagesChange = async (files: FileList | null) => {
     try {
-      const uploadedImages = await readFilesAsDataUrls(files);
+      const uploadedImages = await uploadImagesToStorage(files, "hero");
       if (uploadedImages.length === 0) return;
 
       setHeroImages((current) => [...current, ...uploadedImages]);
+      toast.success("Imagens do banner enviadas com sucesso.");
     } catch {
       toast.error("Não foi possível carregar as imagens do banner.");
     }
@@ -259,7 +252,6 @@ const AdminDashboard = () => {
   }
 
   if (!user) {
-    navigate("/admin/login");
     return null;
   }
 
@@ -288,7 +280,7 @@ const AdminDashboard = () => {
 
           <div className="flex items-center gap-2">
             <span className="hidden text-sm text-muted-foreground sm:block">{user.email}</span>
-            <Button variant="ghost" size="icon" onClick={signOut}>
+            <Button variant="ghost" size="icon" onClick={() => void signOut()}>
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
@@ -371,11 +363,7 @@ const AdminDashboard = () => {
                     key={`${image.slice(0, 30)}-${index}`}
                     className="overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#111]"
                   >
-                    <img
-                      src={image}
-                      alt={`Banner ${index + 1}`}
-                      className="aspect-[4/5] w-full object-cover"
-                    />
+                    <img src={image} alt={`Banner ${index + 1}`} className="aspect-[4/5] w-full object-cover" />
                     <div className="space-y-2 p-3">
                       {index === 0 ? (
                         <div className="inline-flex items-center gap-1 rounded-full bg-[#d4af6e]/15 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#f0cf93]">
@@ -574,11 +562,7 @@ const AdminDashboard = () => {
                             key={`${image.slice(0, 30)}-${index}`}
                             className="overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#111]"
                           >
-                            <img
-                              src={image}
-                              alt={`Imagem ${index + 1}`}
-                              className="aspect-square w-full object-cover"
-                            />
+                            <img src={image} alt={`Imagem ${index + 1}`} className="aspect-square w-full object-cover" />
                             <div className="space-y-2 p-3">
                               {index === 0 ? (
                                 <div className="inline-flex items-center gap-1 rounded-full bg-[#d4af6e]/15 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#f0cf93]">
@@ -648,11 +632,7 @@ const AdminDashboard = () => {
                   className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 md:flex-row md:items-center"
                 >
                   {product.image_url && (
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="h-24 w-24 rounded-2xl object-cover"
-                    />
+                    <img src={product.image_url} alt={product.name} className="h-24 w-24 rounded-2xl object-cover" />
                   )}
 
                   <div className="min-w-0 flex-1">

@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 type AdminUser = {
+  id: string;
   email: string;
 };
 
@@ -12,45 +14,101 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-const ADMIN_EMAIL = "emanuelelais88@gmail.com";
-const ADMIN_PASSWORD = "El17200306!";
-const ADMIN_SESSION_KEY = "lais-fitness-admin-session";
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const getAdminUser = async () => {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user.email) {
+    return { user: null, isAdmin: false };
+  }
+
+  const { data, error } = await supabase.rpc("has_role", {
+    _user_id: session.user.id,
+    _role: "admin",
+  });
+
+  if (error || !data) {
+    return { user: null, isAdmin: false };
+  }
+
+  return {
+    user: {
+      id: session.user.id,
+      email: session.user.email,
+    },
+    isAdmin: true,
+  };
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AdminUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedSession = window.localStorage.getItem(ADMIN_SESSION_KEY);
-    if (savedSession === ADMIN_EMAIL) {
-      setUser({ email: ADMIN_EMAIL });
-    }
-    setLoading(false);
+    let mounted = true;
+
+    const syncSession = async () => {
+      setLoading(true);
+      const authState = await getAdminUser();
+
+      if (!mounted) return;
+
+      setUser(authState.user);
+      setIsAdmin(authState.isAdmin);
+      setLoading(false);
+    };
+
+    void syncSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void syncSession();
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
     const normalizedEmail = email.trim().toLowerCase();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    });
 
-    if (normalizedEmail !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
-      throw new Error("Email ou senha invalidos.");
+    if (error) {
+      throw new Error("Email ou senha inválidos.");
     }
 
-    window.localStorage.setItem(ADMIN_SESSION_KEY, ADMIN_EMAIL);
-    setUser({ email: ADMIN_EMAIL });
+    const authState = await getAdminUser();
+
+    if (!authState.isAdmin || !authState.user) {
+      await supabase.auth.signOut();
+      throw new Error("Seu usuário não tem permissão de administrador.");
+    }
+
+    setUser(authState.user);
+    setIsAdmin(true);
   };
 
   const signOut = async () => {
-    window.localStorage.removeItem(ADMIN_SESSION_KEY);
+    await supabase.auth.signOut();
     setUser(null);
+    setIsAdmin(false);
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAdmin: !!user,
+        isAdmin,
         loading,
         signIn,
         signOut,

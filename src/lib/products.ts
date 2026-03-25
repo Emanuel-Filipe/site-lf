@@ -2,6 +2,7 @@ import productLegging1 from "@/assets/product-legging-1.jpg";
 import productTop1 from "@/assets/product-top-1.jpg";
 import productLegging2 from "@/assets/product-legging-2.jpg";
 import productConjunto1 from "@/assets/product-conjunto-1.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
 export type ProductAvailability = "disponivel" | "encomenda";
 
@@ -23,7 +24,21 @@ export type StoreProduct = {
 
 export type StoreProductInput = Omit<StoreProduct, "id" | "created_at" | "updated_at">;
 
-const STORAGE_KEY = "lais-fitness-products";
+type ProductRow = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  price: number;
+  category: string;
+  image_url: string | null;
+  images: string[] | null;
+  sizes: string[] | null;
+  active: boolean;
+  availability: ProductAvailability;
+  created_at: string;
+  updated_at: string;
+};
 
 export const slugifyProductName = (value: string) =>
   value
@@ -113,7 +128,8 @@ const seedProducts: StoreProduct[] = [
   }),
 ];
 
-const cloneSeedProducts = () => seedProducts.map((product) => ({ ...product, images: [...product.images], sizes: [...product.sizes] }));
+const cloneSeedProducts = () =>
+  seedProducts.map((product) => ({ ...product, images: [...product.images], sizes: [...product.sizes] }));
 
 const normalizeProduct = (product: Partial<StoreProduct> & Pick<StoreProduct, "id" | "name" | "price" | "category" | "active" | "availability">): StoreProduct => {
   const images =
@@ -140,72 +156,83 @@ const normalizeProduct = (product: Partial<StoreProduct> & Pick<StoreProduct, "i
   };
 };
 
-export const getProducts = async () => {
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    const seeded = cloneSeedProducts();
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-    return seeded;
-  }
+const mapRowToProduct = (row: ProductRow): StoreProduct =>
+  normalizeProduct({
+    ...row,
+    images: row.images || [],
+    sizes: row.sizes || [],
+  });
 
-  try {
-    const parsed = JSON.parse(stored) as Array<
-      Partial<StoreProduct> &
-        Pick<StoreProduct, "id" | "name" | "price" | "category" | "active" | "availability">
-    >;
-    const normalized = parsed.map(normalizeProduct);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-    return normalized;
-  } catch {
-    const seeded = cloneSeedProducts();
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-    return seeded;
-  }
-};
-
-const persistProducts = (products: StoreProduct[]) => {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-};
-
-export const getProductBySlug = async (slug: string) => {
-  const products = await getProducts();
-  return products.find((product) => product.slug === slug) || null;
-};
-
-export const saveProduct = async (product: StoreProductInput, id?: string) => {
-  const products = await getProducts();
-  const now = new Date().toISOString();
-  const normalizedInput = normalizeProduct({
+const normalizeInput = (product: StoreProductInput, id?: string) =>
+  normalizeProduct({
     ...product,
     id: id || crypto.randomUUID(),
   });
 
-  if (id) {
-    const updatedProducts = products.map((item) =>
-      item.id === id
-        ? {
-            ...normalizedInput,
-            id,
-            created_at: item.created_at,
-            updated_at: now,
-          }
-        : item
-    );
-    persistProducts(updatedProducts);
-    return;
+export const getProducts = async () => {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Erro ao carregar produtos do Supabase:", error);
+    return cloneSeedProducts();
   }
 
-  const newProduct: StoreProduct = {
-    ...normalizedInput,
-    id: normalizedInput.id,
-    created_at: now,
-    updated_at: now,
+  if (!data || data.length === 0) {
+    return cloneSeedProducts();
+  }
+
+  return (data as ProductRow[]).map(mapRowToProduct);
+};
+
+export const getProductBySlug = async (slug: string) => {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erro ao carregar produto do Supabase:", error);
+    return cloneSeedProducts().find((product) => product.slug === slug) || null;
+  }
+
+  if (!data) {
+    return cloneSeedProducts().find((product) => product.slug === slug) || null;
+  }
+
+  return mapRowToProduct(data as ProductRow);
+};
+
+export const saveProduct = async (product: StoreProductInput, id?: string) => {
+  const normalizedInput = normalizeInput(product, id);
+  const payload = {
+    id: id || normalizedInput.id,
+    slug: normalizedInput.slug,
+    name: normalizedInput.name,
+    description: normalizedInput.description,
+    price: normalizedInput.price,
+    category: normalizedInput.category,
+    image_url: normalizedInput.images[0] || normalizedInput.image_url || "/placeholder.svg",
+    images: normalizedInput.images,
+    sizes: normalizedInput.sizes,
+    active: normalizedInput.active,
+    availability: normalizedInput.availability,
   };
 
-  persistProducts([newProduct, ...products]);
+  const { error } = await supabase.from("products").upsert(payload, { onConflict: "id" });
+
+  if (error) {
+    throw error;
+  }
 };
 
 export const deleteProduct = async (id: string) => {
-  const products = await getProducts();
-  persistProducts(products.filter((product) => product.id !== id));
+  const { error } = await supabase.from("products").delete().eq("id", id);
+
+  if (error) {
+    throw error;
+  }
 };
