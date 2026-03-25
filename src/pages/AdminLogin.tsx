@@ -32,7 +32,7 @@ const AdminLogin = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-sm space-y-6">
+      <div className="w-full max-w-sm space-y-6 rounded-3xl border border-border bg-card/70 p-6 backdrop-blur-sm sm:p-8">
         <div className="text-center">
           <div className="mb-4 flex justify-center">
             <BrandLogo size="sm" />
@@ -52,7 +52,8 @@ const AdminLogin = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="emanuelelais88@gmail.com"
+              placeholder="Digite seu email"
+              autoComplete="username"
               required
             />
           </div>
@@ -65,6 +66,7 @@ const AdminLogin = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Digite sua senha"
+              autoComplete="current-password"
               required
             />
           </div>

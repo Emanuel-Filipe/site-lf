@@ -14,6 +14,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
+const ADMIN_EMAIL = "emanuelelais88@gmail.com";
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const getAdminUser = async () => {
@@ -78,20 +79,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     const normalizedEmail = email.trim().toLowerCase();
+
+    if (normalizedEmail !== ADMIN_EMAIL) {
+      throw new Error("Use o email administrador configurado para a loja.");
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email: normalizedEmail,
       password,
     });
 
     if (error) {
-      throw new Error("Email ou senha inválidos.");
+      const message = error.message.toLowerCase();
+
+      if (message.includes("email not confirmed")) {
+        throw new Error("Confirme o email no Supabase antes de acessar o painel.");
+      }
+
+      if (message.includes("invalid login credentials")) {
+        throw new Error("Email ou senha inválidos.");
+      }
+
+      throw new Error(error.message);
     }
 
     const authState = await getAdminUser();
 
     if (!authState.isAdmin || !authState.user) {
       await supabase.auth.signOut();
-      throw new Error("Seu usuário não tem permissão de administrador.");
+      throw new Error("Usuário autenticado, mas sem permissão de administrador.");
     }
 
     setUser(authState.user);

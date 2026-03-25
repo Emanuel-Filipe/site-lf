@@ -17,7 +17,7 @@ const Header = () => {
         borderBottom: "1px solid #1e1e1e",
       }}
     >
-      <div className="container mx-auto flex h-20 items-center justify-between px-4">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4 md:h-20">
         <Link to="/" className="shrink-0">
           <BrandLogo size="sm" />
         </Link>
@@ -45,10 +45,10 @@ const Header = () => {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={openCart}
-            className="relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all"
+            className="relative flex items-center gap-1 rounded-lg px-2.5 py-1.5 transition-all md:gap-1.5 md:px-3"
             style={{
               background: "#1a1a1a",
               border: "1px solid #2a2a2a",
@@ -82,7 +82,7 @@ const Header = () => {
           </button>
 
           <button
-            className="transition-colors md:hidden"
+            className="rounded-lg p-1 transition-colors md:hidden"
             style={{ color: "#888" }}
             onClick={() => setMenuOpen(!menuOpen)}
           >

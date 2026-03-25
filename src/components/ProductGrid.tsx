@@ -68,7 +68,7 @@ const ProductGrid = ({ mode = "catalog" }: ProductGridProps) => {
   const visibleProducts = mode === "preview" ? filtered.slice(0, 4) : filtered;
 
   return (
-    <section id="produtos" className="py-20" style={{ background: "#0d0d0d" }}>
+    <section id="produtos" className="py-16 md:py-20" style={{ background: "#0d0d0d" }}>
       <div className="container mx-auto px-4">
         {mode === "preview" ? (
           <motion.div
@@ -90,7 +90,7 @@ const ProductGrid = ({ mode = "catalog" }: ProductGridProps) => {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 md:justify-end">
               <div className="rounded-full border border-[#d4af6e]/20 bg-[#151515] px-4 py-2 text-sm text-[#f0cf93]">
                 {featuredStats.disponiveis} disponíveis
               </div>
@@ -132,13 +132,13 @@ const ProductGrid = ({ mode = "catalog" }: ProductGridProps) => {
         )}
 
         {mode === "catalog" ? (
-          <div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
-            <aside className="rounded-[1.75rem] border border-[#222] bg-[#101010] p-5 lg:sticky lg:top-28">
+          <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8 lg:items-start">
+            <aside className="rounded-[1.75rem] border border-[#222] bg-[#101010] p-4 sm:p-5 lg:sticky lg:top-28">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f0cf93]">
                   Disponibilidade
                 </p>
-                <div className="mt-3 flex flex-col gap-2">
+                <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0">
                   {AVAILABILITY_FILTERS.map((filter) => {
                     const isActive = availabilityFilter === filter.value;
 
@@ -146,7 +146,7 @@ const ProductGrid = ({ mode = "catalog" }: ProductGridProps) => {
                       <button
                         key={filter.value}
                         onClick={() => setAvailabilityFilter(filter.value)}
-                        className="rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200"
+                        className="min-w-fit whitespace-nowrap rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200 lg:w-full"
                         style={{
                           background: isActive ? "linear-gradient(135deg, #c9956a, #d4af6e)" : "#141414",
                           color: isActive ? "#000" : "#c8c0b4",
@@ -164,7 +164,7 @@ const ProductGrid = ({ mode = "catalog" }: ProductGridProps) => {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f0cf93]">
                   Categorias
                 </p>
-                <div className="mt-3 flex flex-col gap-2">
+                <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0">
                   {CATEGORIES.map((cat) => {
                     const isActive = activeCategory === cat;
 
@@ -172,7 +172,7 @@ const ProductGrid = ({ mode = "catalog" }: ProductGridProps) => {
                       <button
                         key={cat}
                         onClick={() => setActiveCategory(cat)}
-                        className="rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200"
+                        className="min-w-fit whitespace-nowrap rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200 lg:w-full"
                         style={{
                           background: isActive ? "linear-gradient(135deg, #c9956a, #d4af6e)" : "#141414",
                           color: isActive ? "#000" : "#c8c0b4",
@@ -232,7 +232,7 @@ const ProductGrid = ({ mode = "catalog" }: ProductGridProps) => {
             <div className="mt-10 flex justify-center">
               <Link
                 to="/produtos"
-                className="rounded-full border border-[#d4af6e]/25 bg-[#171717] px-7 py-3 text-sm font-semibold uppercase tracking-[0.22em] text-[#f0cf93] transition-all hover:border-[#d4af6e] hover:bg-[#1c1c1c]"
+                className="rounded-full border border-[#d4af6e]/25 bg-[#171717] px-7 py-3 text-center text-sm font-semibold uppercase tracking-[0.22em] text-[#f0cf93] transition-all hover:border-[#d4af6e] hover:bg-[#1c1c1c]"
               >
                 Ver catálogo completo
               </Link>

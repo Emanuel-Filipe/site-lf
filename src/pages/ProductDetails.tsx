@@ -80,8 +80,8 @@ const ProductDetails = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 pb-20 pt-32">
-        <div className="mb-8 flex items-center gap-3 text-sm text-muted-foreground">
+      <main className="container mx-auto px-4 pb-16 pt-24 sm:pb-20 sm:pt-28 md:pt-32">
+        <div className="mb-6 hidden flex-wrap items-center gap-3 text-sm text-muted-foreground sm:flex md:mb-8">
           <Link to="/" className="transition-colors hover:text-[#d4af6e]">
             Início
           </Link>
@@ -93,22 +93,22 @@ const ProductDetails = () => {
           <span className="text-foreground">{product.name}</span>
         </div>
 
-        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10">
           <section className="space-y-4">
             <div className="relative overflow-hidden rounded-[2rem] border border-[#252525] bg-[#141414]">
               <img src={images[selectedImage]} alt={product.name} className="aspect-[4/5] w-full object-cover" />
-              <div className="absolute left-5 top-5 flex flex-wrap gap-2">
-                <span className="rounded-full border border-[#d4af6e]/25 bg-black/55 px-4 py-2 text-xs uppercase tracking-[0.2em] text-[#f0cf93] backdrop-blur-sm">
+              <div className="absolute left-3 top-3 flex flex-wrap gap-2 sm:left-5 sm:top-5">
+                <span className="rounded-full border border-[#d4af6e]/25 bg-black/55 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-[#f0cf93] backdrop-blur-sm sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.2em]">
                   {product.category}
                 </span>
-                <span className="rounded-full border border-white/10 bg-black/55 px-4 py-2 text-xs uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm">
+                <span className="rounded-full border border-white/10 bg-black/55 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.2em]">
                   {product.availability === "disponivel" ? "Disponível para envio" : "Sob encomenda"}
                 </span>
               </div>
             </div>
 
             {images.length > 1 && (
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-2 sm:gap-3">
                 {images.map((image, index) => (
                   <button
                     key={`${image}-${index}`}
@@ -135,16 +135,16 @@ const ProductDetails = () => {
             </Link>
 
             <div>
-              <h1 className="mb-3 font-brand text-5xl text-foreground">{product.name}</h1>
-              <p className="mb-4 text-lg leading-relaxed text-muted-foreground">
+              <h1 className="mb-3 font-brand text-3xl text-foreground sm:text-4xl md:text-5xl">{product.name}</h1>
+              <p className="mb-4 text-base leading-7 text-muted-foreground sm:text-lg sm:leading-relaxed">
                 {product.description || "Consulte detalhes e disponibilidade diretamente pelo WhatsApp."}
               </p>
-              <p className="text-3xl font-semibold text-gradient-gold">
+              <p className="text-2xl font-semibold text-gradient-gold sm:text-3xl">
                 R$ {product.price.toFixed(2).replace(".", ",")}
               </p>
             </div>
 
-            <div className="rounded-3xl border border-[#252525] bg-[#151515] p-6">
+            <div className="rounded-3xl border border-[#252525] bg-[#151515] p-4 sm:p-6">
               <div className="mb-5 flex items-start gap-3 rounded-2xl border border-[#d4af6e]/15 bg-black/20 p-4">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 text-[#d4af6e]" />
                 <div className="text-sm text-muted-foreground">
@@ -185,12 +185,12 @@ const ProductDetails = () => {
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="mt-6 grid gap-3 md:grid-cols-2">
                 <Button
                   type="button"
                   onClick={handleAddToCart}
                   disabled={hasSizes && !selectedSize}
-                  className="h-12 whitespace-nowrap px-5 text-[10px] uppercase tracking-[0.1em] sm:px-6 sm:text-xs sm:tracking-[0.14em]"
+                  className="h-12 whitespace-nowrap px-5 text-[10px] uppercase tracking-[0.08em] sm:px-6 sm:text-xs sm:tracking-[0.14em]"
                 >
                   <ShoppingBag className="h-4 w-4 shrink-0" />
                   <span>Adicionar ao carrinho</span>
@@ -200,7 +200,7 @@ const ProductDetails = () => {
                   variant="outline"
                   onClick={handleBuyNow}
                   disabled={hasSizes && !selectedSize}
-                  className="h-12 whitespace-nowrap border-[#25D366] px-5 text-[10px] uppercase tracking-[0.1em] text-[#25D366] hover:bg-[#25D366] hover:text-white sm:px-6 sm:text-xs sm:tracking-[0.14em]"
+                  className="h-12 whitespace-nowrap border-[#25D366] px-5 text-[10px] uppercase tracking-[0.08em] text-[#25D366] hover:bg-[#25D366] hover:text-white sm:px-6 sm:text-xs sm:tracking-[0.14em]"
                 >
                   <MessageCircle className="h-4 w-4 shrink-0" />
                   <span>Comprar no WhatsApp</span>
@@ -223,7 +223,7 @@ const ProductDetails = () => {
                 <p className="mb-2 text-xs uppercase tracking-[0.28em] text-[#f0cf93]">
                   Você também pode gostar
                 </p>
-                <h2 className="font-display text-4xl text-foreground">Mais da categoria {product.category}</h2>
+                <h2 className="font-display text-3xl text-foreground sm:text-4xl">Mais da categoria {product.category}</h2>
               </div>
             </div>
 
