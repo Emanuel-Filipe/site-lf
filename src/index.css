@@ -1,0 +1,211 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 5%;
+    --background-2: 0 0% 8%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 94%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 94%;
+
+    --rose-gold: 21 42% 60%;
+    --rose-gold-dark: 20 38% 53%;
+
+    --gold: 38 55% 63%;
+    --gold-dark: 36 50% 55%;
+
+    --accent: 21 42% 60%;
+    --accent-foreground: 0 0% 5%;
+
+    --foreground: 0 0% 94%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 50%;
+
+    --primary: 38 55% 63%;
+    --primary-foreground: 0 0% 5%;
+
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 94%;
+
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+    --ring: 21 42% 60%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --radius: 0.75rem;
+    --coral: 12 90% 58%;
+    --coral-foreground: 0 0% 100%;
+
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 0 0% 94%;
+    --sidebar-primary: 38 55% 63%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 0 0% 14%;
+    --sidebar-accent-foreground: 0 0% 94%;
+    --sidebar-border: 0 0% 16%;
+    --sidebar-ring: 21 42% 60%;
+  }
+
+  .dark {
+    --background: 0 0% 5%;
+    --card: 0 0% 10%;
+    --foreground: 0 0% 94%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 50%;
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background font-body text-foreground;
+    background-color: #0d0d0d;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #111;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #c9956a;
+  }
+}
+
+@layer utilities {
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #c9956a 0%, #d4af6e 50%, #c49a55 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-gradient-gold {
+    background: linear-gradient(135deg, #c9956a 0%, #d4af6e 100%);
+  }
+
+  .border-gold {
+    border-color: rgba(212, 175, 110, 0.3);
+  }
+
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(212, 175, 110, 0.15);
+  }
+
+  .brand-logo {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.05rem;
+    line-height: 1;
+  }
+
+  .brand-logo__top {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 0.02em;
+    font-family: "Cormorant Garamond", serif;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    background: linear-gradient(180deg, #f5d6cb 0%, #d8a18e 48%, #8b5f4e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 1px 0 rgba(255, 234, 220, 0.18))
+      drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
+  }
+
+  .brand-logo__fitness {
+    font-family: "Cinzel", serif;
+    font-weight: 500;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: #d4af6e;
+    text-shadow: 0 1px 0 rgba(255, 235, 190, 0.2), 0 6px 14px rgba(0, 0, 0, 0.45);
+  }
+
+  .brand-logo__dumbbell {
+    position: relative;
+    display: inline-block;
+    width: 0.42em;
+    height: 1.08em;
+    margin: 0 0.06em 0.02em;
+    background: linear-gradient(180deg, #f0dc92 0%, #d4af6e 48%, #9c7334 100%);
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(65, 43, 11, 0.28), 0 2px 6px rgba(0, 0, 0, 0.35);
+  }
+
+  .brand-logo__dumbbell::before,
+  .brand-logo__dumbbell::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 0.92em;
+    height: 0.22em;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #f6e39f 0%, #d4af6e 48%, #9f7637 100%);
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(65, 43, 11, 0.22);
+  }
+
+  .brand-logo__dumbbell::before {
+    top: -0.02em;
+  }
+
+  .brand-logo__dumbbell::after {
+    bottom: -0.02em;
+  }
+
+  .brand-logo--sm .brand-logo__top {
+    font-size: 2.65rem;
+  }
+
+  .brand-logo--sm .brand-logo__fitness {
+    padding-left: 0.18rem;
+    font-size: 0.68rem;
+  }
+
+  .brand-logo--md .brand-logo__top {
+    font-size: 3.2rem;
+  }
+
+  .brand-logo--md .brand-logo__fitness {
+    padding-left: 0.22rem;
+    font-size: 0.82rem;
+  }
+
+  @media (max-width: 767px) {
+    .brand-logo--sm .brand-logo__top {
+      font-size: 2.1rem;
+    }
+
+    .brand-logo--sm .brand-logo__fitness {
+      font-size: 0.56rem;
+      letter-spacing: 0.28em;
+    }
+  }
+}

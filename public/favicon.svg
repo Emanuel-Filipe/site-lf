@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="brand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0d1c4" />
+      <stop offset="48%" stop-color="#c9956a" />
+      <stop offset="100%" stop-color="#d4af6e" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="#0d0d0d" />
+  <text
+    x="50%"
+    y="55%"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#brand)"
+    font-family="'Cormorant Garamond', Georgia, serif"
+    font-size="26"
+    font-weight="700"
+    letter-spacing="1.5"
+  >
+    LIF
+  </text>
+</svg>
