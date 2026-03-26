@@ -79,7 +79,7 @@ const createProduct = (
 
 const seedProducts: StoreProduct[] = [
   createProduct({
-    id: "1",
+    id: "11111111-1111-4111-8111-111111111111",
     name: "Conjunto Treino Coral",
     description: "Conjunto versatil para treino com tecido confortavel e modelagem que valoriza o corpo.",
     price: 189.9,
@@ -91,7 +91,7 @@ const seedProducts: StoreProduct[] = [
     sizes: ["P", "M", "G"],
   }),
   createProduct({
-    id: "2",
+    id: "22222222-2222-4222-8222-222222222222",
     name: "Top Esportivo Coral",
     description: "Top com sustentacao, toque macio e acabamento premium para treinos intensos.",
     price: 89.9,
@@ -103,7 +103,7 @@ const seedProducts: StoreProduct[] = [
     sizes: ["P", "M", "G"],
   }),
   createProduct({
-    id: "3",
+    id: "33333333-3333-4333-8333-333333333333",
     name: "Legging Cintura Alta Preta",
     description: "Modelagem ajustada, cintura alta e compressao na medida certa para o dia a dia e academia.",
     price: 129.9,
@@ -115,7 +115,7 @@ const seedProducts: StoreProduct[] = [
     sizes: ["M", "G", "GG"],
   }),
   createProduct({
-    id: "4",
+    id: "44444444-4444-4444-8444-444444444444",
     name: "Conjunto Sport Cinza",
     description: "Conjunto com toque macio e visual sofisticado para quem busca conforto e estilo.",
     price: 169.9,
@@ -169,6 +169,31 @@ const normalizeInput = (product: StoreProductInput, id?: string) =>
     id: id || crypto.randomUUID(),
   });
 
+const seedProductsInDatabase = async () => {
+  const payload = seedProducts.map((product) => ({
+    id: product.id,
+    slug: product.slug,
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    category: product.category,
+    image_url: product.image_url,
+    images: product.images,
+    sizes: product.sizes,
+    active: product.active,
+    availability: product.availability,
+  }));
+
+  const { error } = await supabase.from("products").upsert(payload, { onConflict: "id" });
+
+  if (error) {
+    console.error("Erro ao popular produtos iniciais no Supabase:", error);
+    return cloneSeedProducts();
+  }
+
+  return cloneSeedProducts();
+};
+
 export const getProducts = async () => {
   const { data, error } = await supabase
     .from("products")
@@ -181,6 +206,14 @@ export const getProducts = async () => {
   }
 
   if (!data || data.length === 0) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (session) {
+      return seedProductsInDatabase();
+    }
+
     return cloneSeedProducts();
   }
 
