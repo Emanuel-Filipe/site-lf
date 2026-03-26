@@ -47,10 +47,22 @@ const CartDrawer = () => {
                 )}
               </div>
               <button
+                type="button"
                 onClick={closeCart}
-                className="rounded-lg p-1.5 text-[#666] transition-colors hover:bg-white/5"
+                className="rounded-lg p-2 text-[#666] transition-colors hover:bg-white/5"
+                aria-label="Fechar carrinho"
               >
                 <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="border-b border-[#1e1e1e] px-5 py-3">
+              <button
+                type="button"
+                onClick={closeCart}
+                className="w-full rounded-xl border border-[#2a2a2a] px-4 py-3 text-sm font-medium text-[#d8c9b5] transition-colors hover:border-[#c9956a] hover:text-[#f0cf93]"
+              >
+                Continuar comprando
               </button>
             </div>
 
