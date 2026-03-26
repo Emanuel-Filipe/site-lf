@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 const ThemeProvider = ({ children }: { children: ReactNode }) => {
   return (
-    <NextThemesProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+    <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
       {children}
     </NextThemesProvider>
   );
