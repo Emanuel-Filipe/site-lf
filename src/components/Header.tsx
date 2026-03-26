@@ -8,7 +8,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { totalItems, openCart } = useCart();
+  const { totalItems, isOpen, closeCart, toggleCart } = useCart();
 
   return (
     <header
@@ -19,7 +19,7 @@ const Header = () => {
       }}
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:h-20">
-        <Link to="/" className="shrink-0">
+        <Link to="/" className="shrink-0" onClick={() => isOpen && closeCart()}>
           <BrandLogo size="sm" />
         </Link>
 
@@ -50,7 +50,7 @@ const Header = () => {
           <ThemeToggle />
 
           <button
-            onClick={openCart}
+            onClick={toggleCart}
             className="relative flex items-center gap-1 rounded-lg px-2.5 py-1.5 transition-all md:gap-1.5 md:px-3"
             style={{
               background: "#1a1a1a",

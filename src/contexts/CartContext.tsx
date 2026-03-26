@@ -24,6 +24,7 @@ interface CartContextType {
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
+  toggleCart: () => void;
   checkoutWhatsApp: (phoneNumber: string) => void;
 }
 
@@ -124,6 +125,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         isOpen,
         openCart: () => setIsOpen(true),
         closeCart: () => setIsOpen(false),
+        toggleCart: () => setIsOpen((current) => !current),
         checkoutWhatsApp,
       }}
     >

@@ -34,7 +34,7 @@ const CartDrawer = () => {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
-            className="fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col border-l border-[#252525] bg-[#141414]"
+            className="fixed right-0 top-0 z-40 flex h-full w-full max-w-sm flex-col border-l border-[#252525] bg-[#141414]"
           >
             <div className="flex items-center justify-between border-b border-[#252525] px-5 py-4">
               <div className="flex items-center gap-2">
@@ -53,16 +53,6 @@ const CartDrawer = () => {
                 aria-label="Fechar carrinho"
               >
                 <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="border-b border-[#1e1e1e] px-5 py-3">
-              <button
-                type="button"
-                onClick={closeCart}
-                className="w-full rounded-xl border border-[#2a2a2a] px-4 py-3 text-sm font-medium text-[#d8c9b5] transition-colors hover:border-[#c9956a] hover:text-[#f0cf93]"
-              >
-                Continuar comprando
               </button>
             </div>
 
