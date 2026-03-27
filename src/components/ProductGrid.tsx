@@ -3,7 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import ProductCard from "./ProductCard";
-import { getProducts, type ProductAvailability } from "@/lib/products";
+import {
+  getDisplayAvailability,
+  getProducts,
+  hasAnyAvailability,
+  type ProductAvailability,
+} from "@/lib/products";
 
 const CATEGORIES = ["Todos", "Conjuntos", "Leggings", "Tops", "Shorts"];
 const AVAILABILITY_FILTERS: { label: string; value: "todos" | ProductAvailability }[] = [
@@ -40,6 +45,12 @@ const ProductGrid = ({ mode = "catalog" }: ProductGridProps) => {
               : [product.image_url || "/placeholder.svg"],
           category: product.category,
           availability: product.availability,
+          displayAvailability: getDisplayAvailability(
+            product.availability,
+            product.size_availability,
+            product.sizes
+          ),
+          sizeAvailability: product.size_availability,
           sizes: product.sizes,
         })),
     [data]
@@ -47,8 +58,12 @@ const ProductGrid = ({ mode = "catalog" }: ProductGridProps) => {
 
   const featuredStats = useMemo(
     () => ({
-      disponiveis: products.filter((product) => product.availability === "disponivel").length,
-      encomenda: products.filter((product) => product.availability === "encomenda").length,
+      disponiveis: products.filter((product) =>
+        hasAnyAvailability(product.availability, product.sizeAvailability, product.sizes, "disponivel")
+      ).length,
+      encomenda: products.filter((product) =>
+        hasAnyAvailability(product.availability, product.sizeAvailability, product.sizes, "encomenda")
+      ).length,
     }),
     [products]
   );
@@ -58,7 +73,13 @@ const ProductGrid = ({ mode = "catalog" }: ProductGridProps) => {
       products.filter((product) => {
         const matchesCategory = activeCategory === "Todos" || product.category === activeCategory;
         const matchesAvailability =
-          availabilityFilter === "todos" || product.availability === availabilityFilter;
+          availabilityFilter === "todos" ||
+          hasAnyAvailability(
+            product.availability,
+            product.sizeAvailability,
+            product.sizes,
+            availabilityFilter
+          );
 
         return matchesCategory && matchesAvailability;
       }),

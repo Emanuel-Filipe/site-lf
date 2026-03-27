@@ -5,6 +5,8 @@ import productConjunto1 from "@/assets/product-conjunto-1.jpg";
 import { supabase } from "@/integrations/supabase/client";
 
 export type ProductAvailability = "disponivel" | "encomenda";
+export type ProductDisplayAvailability = ProductAvailability | "misto";
+export type SizeAvailabilityMap = Record<string, ProductAvailability>;
 
 export type StoreProduct = {
   id: string;
@@ -16,6 +18,7 @@ export type StoreProduct = {
   image_url: string | null;
   images: string[];
   sizes: string[];
+  size_availability: SizeAvailabilityMap;
   active: boolean;
   availability: ProductAvailability;
   created_at: string;
@@ -34,6 +37,7 @@ type ProductRow = {
   image_url: string | null;
   images: string[] | null;
   sizes: string[] | null;
+  size_availability: SizeAvailabilityMap | null;
   active: boolean;
   availability: ProductAvailability;
   created_at: string;
@@ -72,6 +76,7 @@ const createProduct = (
     slug: partial.slug || slugifyProductName(partial.name),
     images,
     sizes: partial.sizes || ["P", "M", "G"],
+    size_availability: {},
     created_at: now,
     updated_at: now,
   };
@@ -129,7 +134,143 @@ const seedProducts: StoreProduct[] = [
 ];
 
 const cloneSeedProducts = () =>
-  seedProducts.map((product) => ({ ...product, images: [...product.images], sizes: [...product.sizes] }));
+  seedProducts.map((product) => ({
+    ...product,
+    images: [...product.images],
+    sizes: [...product.sizes],
+    size_availability: { ...product.size_availability },
+  }));
+
+const normalizeSizes = (sizes: string[]) =>
+  Array.from(
+    new Set(
+      sizes
+        .map((size) => size.trim().toUpperCase())
+        .filter(Boolean)
+    )
+  );
+
+export const normalizeSizeAvailability = (
+  sizes: string[],
+  sizeAvailability?: SizeAvailabilityMap | null,
+  fallbackAvailability: ProductAvailability = "disponivel"
+): SizeAvailabilityMap => {
+  const normalizedSizes = normalizeSizes(sizes);
+  const normalizedEntries = Object.entries(sizeAvailability || {}).reduce<SizeAvailabilityMap>(
+    (acc, [size, availability]) => {
+      const normalizedSize = size.trim().toUpperCase();
+      if (!normalizedSize || (availability !== "disponivel" && availability !== "encomenda")) {
+        return acc;
+      }
+
+      acc[normalizedSize] = availability;
+      return acc;
+    },
+    {}
+  );
+
+  if (normalizedSizes.length === 0) {
+    return normalizedEntries;
+  }
+
+  return normalizedSizes.reduce<SizeAvailabilityMap>((acc, size) => {
+    acc[size] = normalizedEntries[size] || fallbackAvailability;
+    return acc;
+  }, {});
+};
+
+export const getDisplayAvailability = (
+  availability: ProductAvailability,
+  sizeAvailability: SizeAvailabilityMap,
+  sizes: string[]
+): ProductDisplayAvailability => {
+  const normalizedMap = normalizeSizeAvailability(sizes, sizeAvailability, availability);
+  const sizeValues = sizes.map((size) => normalizedMap[size]).filter(Boolean);
+
+  if (sizeValues.length === 0) {
+    return availability;
+  }
+
+  const hasAvailable = sizeValues.includes("disponivel");
+  const hasMadeToOrder = sizeValues.includes("encomenda");
+
+  if (hasAvailable && hasMadeToOrder) {
+    return "misto";
+  }
+
+  return hasAvailable ? "disponivel" : "encomenda";
+};
+
+export const hasAnyAvailability = (
+  availability: ProductAvailability,
+  sizeAvailability: SizeAvailabilityMap,
+  sizes: string[],
+  target: ProductAvailability
+) => {
+  const normalizedMap = normalizeSizeAvailability(sizes, sizeAvailability, availability);
+
+  if (sizes.length === 0) {
+    return availability === target;
+  }
+
+  return sizes.some((size) => normalizedMap[size] === target);
+};
+
+export const getSizeAvailabilityLabel = (availability: ProductAvailability) =>
+  availability === "disponivel" ? "Disponível" : "Encomenda";
+
+export const getDisplayAvailabilityLabel = (availability: ProductDisplayAvailability) => {
+  if (availability === "misto") {
+    return "Disponível e encomenda";
+  }
+
+  return getSizeAvailabilityLabel(availability);
+};
+
+export const getAvailabilityDescription = (availability: ProductDisplayAvailability) => {
+  if (availability === "misto") {
+    return "Alguns tamanhos estão disponíveis agora e outros são por encomenda.";
+  }
+
+  return availability === "disponivel"
+    ? "Todos os tamanhos cadastrados estão disponíveis agora."
+    : "Todos os tamanhos cadastrados são produzidos por encomenda.";
+};
+
+export const getSizeAvailabilitySummary = (product: Pick<StoreProduct, "sizes" | "size_availability" | "availability">) => {
+  if (product.sizes.length === 0) {
+    return "Consulte tamanhos e disponibilidade pelo WhatsApp.";
+  }
+
+  const normalizedMap = normalizeSizeAvailability(
+    product.sizes,
+    product.size_availability,
+    product.availability
+  );
+
+  const availableSizes = product.sizes.filter((size) => normalizedMap[size] === "disponivel");
+  const madeToOrderSizes = product.sizes.filter((size) => normalizedMap[size] === "encomenda");
+
+  if (availableSizes.length === product.sizes.length) {
+    return `Tamanhos disponíveis: ${availableSizes.join(", ")}`;
+  }
+
+  if (madeToOrderSizes.length === product.sizes.length) {
+    return `Tamanhos sob encomenda: ${madeToOrderSizes.join(", ")}`;
+  }
+
+  const parts: string[] = [];
+
+  if (availableSizes.length > 0) {
+    parts.push(`Disponíveis: ${availableSizes.join(", ")}`);
+  }
+
+  if (madeToOrderSizes.length > 0) {
+    parts.push(`Encomenda: ${madeToOrderSizes.join(", ")}`);
+  }
+
+  return parts.join(" • ");
+};
 
 const normalizeProduct = (product: Partial<StoreProduct> & Pick<StoreProduct, "id" | "name" | "price" | "category" | "active" | "availability">): StoreProduct => {
   const images =
@@ -138,6 +279,8 @@ const normalizeProduct = (product: Partial<StoreProduct> & Pick<StoreProduct, "i
       : product.image_url
         ? [product.image_url]
         : ["/placeholder.svg"];
+  const sizes = product.sizes && product.sizes.length > 0 ? normalizeSizes(product.sizes) : [];
+  const sizeAvailability = normalizeSizeAvailability(sizes, product.size_availability, product.availability);
 
   return {
     id: product.id,
@@ -148,7 +291,8 @@ const normalizeProduct = (product: Partial<StoreProduct> & Pick<StoreProduct, "i
     category: product.category,
     image_url: product.image_url || images[0] || "/placeholder.svg",
     images,
-    sizes: product.sizes && product.sizes.length > 0 ? product.sizes : [],
+    sizes,
+    size_availability: sizeAvailability,
     active: product.active,
     availability: product.availability,
     created_at: product.created_at || new Date().toISOString(),
@@ -161,6 +305,7 @@ const mapRowToProduct = (row: ProductRow): StoreProduct =>
     ...row,
     images: row.images || [],
     sizes: row.sizes || [],
+    size_availability: row.size_availability || {},
   });
 
 const normalizeInput = (product: StoreProductInput, id?: string) =>
@@ -180,6 +325,7 @@ const seedProductsInDatabase = async () => {
     image_url: product.image_url,
     images: product.images,
     sizes: product.sizes,
+    size_availability: normalizeSizeAvailability(product.sizes, product.size_availability, product.availability),
     active: product.active,
     availability: product.availability,
   }));
@@ -251,6 +397,11 @@ export const saveProduct = async (product: StoreProductInput, id?: string) => {
     image_url: normalizedInput.images[0] || normalizedInput.image_url || "/placeholder.svg",
     images: normalizedInput.images,
     sizes: normalizedInput.sizes,
+    size_availability: normalizeSizeAvailability(
+      normalizedInput.sizes,
+      normalizedInput.size_availability,
+      normalizedInput.availability
+    ),
     active: normalizedInput.active,
     availability: normalizedInput.availability,
   };

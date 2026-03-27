@@ -1,12 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, ShoppingBag, MessageCircle, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ChevronLeft, MessageCircle, ShoppingBag } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { Button } from "@/components/ui/button";
-import { getProductBySlug, getProducts } from "@/lib/products";
+import {
+  getDisplayAvailability,
+  getDisplayAvailabilityLabel,
+  getProductBySlug,
+  getProducts,
+  getSizeAvailabilityLabel,
+  normalizeSizeAvailability,
+} from "@/lib/products";
 import { useCart } from "@/contexts/CartContext";
 import NotFound from "@/pages/NotFound";
 
@@ -44,13 +51,30 @@ const ProductDetails = () => {
   );
 
   if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
+        Carregando...
+      </div>
+    );
   }
 
   if (!product || !product.active) return <NotFound />;
 
   const images = product.images.length > 0 ? product.images : [product.image_url || "/placeholder.svg"];
   const hasSizes = product.sizes.length > 0;
+  const sizeAvailabilityMap = normalizeSizeAvailability(
+    product.sizes,
+    product.size_availability,
+    product.availability
+  );
+  const displayAvailability = getDisplayAvailability(
+    product.availability,
+    product.size_availability,
+    product.sizes
+  );
+  const selectedSizeAvailability = selectedSize
+    ? sizeAvailabilityMap[selectedSize] || product.availability
+    : product.availability;
 
   const handleAddToCart = () => {
     if (hasSizes && !selectedSize) return;
@@ -62,16 +86,23 @@ const ProductDetails = () => {
       price: product.price,
       image: images[selectedImage],
       category: product.category,
-      availability: product.availability,
+      availability: selectedSizeAvailability,
       size: selectedSize,
     });
   };
 
   const handleBuyNow = () => {
+    if (hasSizes && !selectedSize) return;
+
     handleAddToCart();
+
+    const availabilityText = hasSizes && selectedSize
+      ? ` (${getSizeAvailabilityLabel(selectedSizeAvailability)})`
+      : "";
+
     window.open(
       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-        `Olá! Tenho interesse no produto ${product.name}${selectedSize ? `, tamanho ${selectedSize}` : ""}. Pode me ajudar?`
+        `Olá! Tenho interesse no produto ${product.name}${selectedSize ? `, tamanho ${selectedSize}` : ""}${availabilityText}. Pode me ajudar?`
       )}`,
       "_blank"
     );
@@ -101,9 +132,21 @@ const ProductDetails = () => {
                 <span className="rounded-full border border-[#d4af6e]/25 bg-black/55 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-[#f0cf93] backdrop-blur-sm sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.2em]">
                   {product.category}
                 </span>
-                <span className="rounded-full border border-white/10 bg-black/55 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.2em]">
-                  {product.availability === "disponivel" ? "Disponível para envio" : "Sob encomenda"}
-                </span>
+
+                {displayAvailability === "misto" ? (
+                  <>
+                    <span className="rounded-full border border-[rgba(37,211,102,0.35)] bg-black/55 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-[#8ff0b4] backdrop-blur-sm sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.2em]">
+                      Disponível
+                    </span>
+                    <span className="rounded-full border border-[#d4af6e]/35 bg-black/55 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-[#f0cf93] backdrop-blur-sm sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.2em]">
+                      Encomenda
+                    </span>
+                  </>
+                ) : (
+                  <span className="rounded-full border border-white/10 bg-black/55 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.2em]">
+                    {getDisplayAvailabilityLabel(displayAvailability)}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -149,41 +192,80 @@ const ProductDetails = () => {
                 <CheckCircle2 className="mt-0.5 h-5 w-5 text-[#d4af6e]" />
                 <div className="text-sm text-muted-foreground">
                   <p className="font-semibold text-foreground">
-                    {product.availability === "disponivel" ? "Pronta entrega" : "Produção sob encomenda"}
+                    {displayAvailability === "misto"
+                      ? "Disponibilidade varia conforme o tamanho"
+                      : displayAvailability === "disponivel"
+                        ? "Pronta entrega"
+                        : "Produção sob encomenda"}
                   </p>
                   <p>
-                    {product.availability === "disponivel"
-                      ? "Produto disponível para compra imediata e combinação de entrega."
-                      : "Produto produzido sob encomenda. Consulte prazo antes de finalizar."}
+                    {displayAvailability === "misto"
+                      ? "Selecione um tamanho para ver com clareza se ele está disponível agora ou se será por encomenda."
+                      : displayAvailability === "disponivel"
+                        ? "Produto disponível para compra imediata e combinação de entrega."
+                        : "Produto produzido sob encomenda. Consulte prazo antes de finalizar."}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#f0cf93]">
-                  Tamanhos disponíveis
+                  Tamanhos
                 </p>
                 <div className="flex flex-wrap gap-3">
                   {hasSizes ? (
-                    product.sizes.map((size) => (
-                      <button
-                        key={size}
-                        type="button"
-                        onClick={() => setSelectedSize(size)}
-                        className={`min-w-14 rounded-2xl border px-5 py-3 text-sm font-semibold transition-colors ${
-                          selectedSize === size
-                            ? "border-[#d4af6e] bg-[#d4af6e] text-black"
-                            : "border-[#2a2a2a] text-foreground hover:border-[#c9956a]"
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))
+                    product.sizes.map((size) => {
+                      const availability = sizeAvailabilityMap[size] || product.availability;
+                      const isSelected = selectedSize === size;
+
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => setSelectedSize(size)}
+                          className={`min-w-[88px] rounded-2xl border px-4 py-3 text-left transition-colors ${
+                            isSelected
+                              ? availability === "disponivel"
+                                ? "border-[#25D366] bg-[rgba(37,211,102,0.12)]"
+                                : "border-[#d4af6e] bg-[rgba(212,175,110,0.12)]"
+                              : "border-[#2a2a2a] hover:border-[#c9956a]"
+                          }`}
+                        >
+                          <div className="text-sm font-semibold text-foreground">{size}</div>
+                          <div
+                            className={`mt-1 text-[11px] uppercase tracking-[0.12em] ${
+                              availability === "disponivel" ? "text-[#8ff0b4]" : "text-[#f0cf93]"
+                            }`}
+                          >
+                            {getSizeAvailabilityLabel(availability)}
+                          </div>
+                        </button>
+                      );
+                    })
                   ) : (
                     <p className="text-sm text-muted-foreground">Consulte tamanhos pelo WhatsApp.</p>
                   )}
                 </div>
               </div>
+
+              {hasSizes && selectedSize && (
+                <div
+                  className={`mt-5 rounded-2xl border p-4 text-sm ${
+                    selectedSizeAvailability === "disponivel"
+                      ? "border-[rgba(37,211,102,0.35)] bg-[rgba(37,211,102,0.08)] text-[#bcefcf]"
+                      : "border-[#d4af6e]/35 bg-[rgba(212,175,110,0.08)] text-[#f3ddb0]"
+                  }`}
+                >
+                  <p className="font-semibold text-foreground">
+                    Tamanho {selectedSize}: {getSizeAvailabilityLabel(selectedSizeAvailability)}
+                  </p>
+                  <p className="mt-1">
+                    {selectedSizeAvailability === "disponivel"
+                      ? "Esse tamanho pode seguir para compra imediata."
+                      : "Esse tamanho está disponível somente por encomenda. Consulte prazo antes de finalizar."}
+                  </p>
+                </div>
+              )}
 
               <div className="mt-6 grid gap-3 md:grid-cols-2">
                 <Button
@@ -193,7 +275,9 @@ const ProductDetails = () => {
                   className="h-12 whitespace-nowrap px-5 text-[10px] uppercase tracking-[0.08em] sm:px-6 sm:text-xs sm:tracking-[0.14em]"
                 >
                   <ShoppingBag className="h-4 w-4 shrink-0" />
-                  <span>Adicionar ao carrinho</span>
+                  <span>
+                    {selectedSizeAvailability === "encomenda" ? "Adicionar encomenda" : "Adicionar ao carrinho"}
+                  </span>
                 </Button>
                 <Button
                   type="button"
@@ -209,7 +293,7 @@ const ProductDetails = () => {
 
               {hasSizes && !selectedSize && (
                 <p className="mt-3 text-xs text-muted-foreground">
-                  Selecione um tamanho antes de adicionar ou comprar.
+                  Selecione um tamanho para ver a disponibilidade correta antes de adicionar ou comprar.
                 </p>
               )}
             </div>
@@ -223,7 +307,9 @@ const ProductDetails = () => {
                 <p className="mb-2 text-xs uppercase tracking-[0.28em] text-[#f0cf93]">
                   Você também pode gostar
                 </p>
-                <h2 className="font-display text-3xl text-foreground sm:text-4xl">Mais da categoria {product.category}</h2>
+                <h2 className="font-display text-3xl text-foreground sm:text-4xl">
+                  Mais da categoria {product.category}
+                </h2>
               </div>
             </div>
 

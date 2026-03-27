@@ -1,9 +1,16 @@
 import { motion } from "framer-motion";
-import { ShoppingBag, Check } from "lucide-react";
+import { Check, ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
-import type { ProductAvailability } from "@/lib/products";
+import {
+  getAvailabilityDescription,
+  getDisplayAvailabilityLabel,
+  getSizeAvailabilitySummary,
+  type ProductAvailability,
+  type ProductDisplayAvailability,
+  type SizeAvailabilityMap,
+} from "@/lib/products";
 
 interface Product {
   id: string;
@@ -13,6 +20,8 @@ interface Product {
   images: string[];
   category: string;
   availability: ProductAvailability;
+  displayAvailability: ProductDisplayAvailability;
+  sizeAvailability: SizeAvailabilityMap;
   sizes: string[];
 }
 
@@ -42,6 +51,11 @@ const ProductCard = ({ product }: { product: Product }) => {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    if (product.sizes.length > 0) {
+      handleOpenProduct();
+      return;
+    }
 
     addItem({
       id: product.id,
@@ -92,22 +106,35 @@ const ProductCard = ({ product }: { product: Product }) => {
               {product.category}
             </span>
 
-            <span
-              className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em]"
-              style={{
-                background:
-                  product.availability === "disponivel"
-                    ? "rgba(37,211,102,0.16)"
-                    : "rgba(212,175,110,0.16)",
-                color: product.availability === "disponivel" ? "#8ff0b4" : "#f0cf93",
-                border:
-                  product.availability === "disponivel"
-                    ? "1px solid rgba(37,211,102,0.35)"
-                    : "1px solid rgba(212,175,110,0.35)",
-              }}
-            >
-              {product.availability === "disponivel" ? "Disponível" : "Encomenda"}
-            </span>
+            <div className="flex flex-wrap gap-2">
+              {product.displayAvailability === "misto" ? (
+                <>
+                  <span className="rounded-full border border-[rgba(37,211,102,0.35)] bg-[rgba(37,211,102,0.16)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8ff0b4]">
+                    Disponível
+                  </span>
+                  <span className="rounded-full border border-[rgba(212,175,110,0.35)] bg-[rgba(212,175,110,0.16)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#f0cf93]">
+                    Encomenda
+                  </span>
+                </>
+              ) : (
+                <span
+                  className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em]"
+                  style={{
+                    background:
+                      product.displayAvailability === "disponivel"
+                        ? "rgba(37,211,102,0.16)"
+                        : "rgba(212,175,110,0.16)",
+                    color: product.displayAvailability === "disponivel" ? "#8ff0b4" : "#f0cf93",
+                    border:
+                      product.displayAvailability === "disponivel"
+                        ? "1px solid rgba(37,211,102,0.35)"
+                        : "1px solid rgba(212,175,110,0.35)",
+                  }}
+                >
+                  {getDisplayAvailabilityLabel(product.displayAvailability)}
+                </span>
+              )}
+            </div>
           </div>
         </button>
 
@@ -115,9 +142,14 @@ const ProductCard = ({ product }: { product: Product }) => {
           <div className="space-y-1">
             <h3 className="text-sm font-medium text-foreground">{product.name}</h3>
             <p className="text-xs text-muted-foreground">
-              {product.sizes.length > 0
-                ? `Tamanhos: ${product.sizes.join(", ")}`
-                : "Consulte tamanhos disponíveis"}
+              {getSizeAvailabilitySummary({
+                sizes: product.sizes,
+                size_availability: product.sizeAvailability,
+                availability: product.availability,
+              })}
+            </p>
+            <p className="text-[11px] leading-5 text-muted-foreground">
+              {getAvailabilityDescription(product.displayAvailability)}
             </p>
             <p
               className="text-base font-bold"
@@ -152,7 +184,13 @@ const ProductCard = ({ product }: { product: Product }) => {
               initial={false}
             >
               {added ? <Check className="h-4 w-4" /> : <ShoppingBag className="h-4 w-4" />}
-              <span>{product.availability === "disponivel" ? "Adicionar" : "Encomendar"}</span>
+              <span>
+                {product.sizes.length > 0
+                  ? "Escolher tamanho"
+                  : product.displayAvailability === "encomenda"
+                    ? "Encomendar"
+                    : "Adicionar"}
+              </span>
             </motion.button>
           </div>
         </div>

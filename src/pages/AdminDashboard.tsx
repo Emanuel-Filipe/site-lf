@@ -1,35 +1,34 @@
 import { useEffect, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/useAuth";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
-  Plus,
-  Pencil,
-  Trash2,
-  LogOut,
   ArrowLeft,
   ImagePlus,
-  Store,
+  LogOut,
+  Pencil,
+  Plus,
   Star,
+  Store,
+  Trash2,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   type ProductAvailability,
+  type SizeAvailabilityMap,
   type StoreProduct,
   deleteProduct,
+  getDisplayAvailability,
+  getDisplayAvailabilityLabel,
   getProducts,
+  getSizeAvailabilitySummary,
+  normalizeSizeAvailability,
   saveProduct,
   slugifyProductName,
 } from "@/lib/products";
@@ -44,10 +43,29 @@ const parseSizes = (value: string) =>
     .map((item) => item.trim().toUpperCase())
     .filter(Boolean);
 
+const syncSizeAvailabilityState = (
+  sizesValue: string,
+  currentMap: SizeAvailabilityMap,
+  fallbackAvailability: ProductAvailability
+) => normalizeSizeAvailability(parseSizes(sizesValue), currentMap, fallbackAvailability);
+
 const moveItemToFront = (items: string[], indexToMove: number) => {
   const selected = items[indexToMove];
   const remaining = items.filter((_, index) => index !== indexToMove);
   return [selected, ...remaining];
+};
+
+const defaultFormState = {
+  slug: "",
+  name: "",
+  description: "",
+  price: "",
+  category: "Leggings",
+  images: [] as string[],
+  sizes: "P, M, G",
+  sizeAvailability: normalizeSizeAvailability(["P", "M", "G"], {}, "disponivel") as SizeAvailabilityMap,
+  active: true,
+  availability: "disponivel" as ProductAvailability,
 };
 
 const AdminDashboard = () => {
@@ -58,18 +76,7 @@ const AdminDashboard = () => {
   const [editingProduct, setEditingProduct] = useState<StoreProduct | null>(null);
   const [heroImages, setHeroImages] = useState<string[]>([]);
   const [heroDescription, setHeroDescription] = useState("");
-
-  const [form, setForm] = useState({
-    slug: "",
-    name: "",
-    description: "",
-    price: "",
-    category: "Leggings",
-    images: [] as string[],
-    sizes: "P, M, G",
-    active: true,
-    availability: "disponivel" as ProductAvailability,
-  });
+  const [form, setForm] = useState(defaultFormState);
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["admin-products"],
@@ -106,7 +113,7 @@ const AdminDashboard = () => {
       queryClient.invalidateQueries({ queryKey: ["store-settings"] });
       toast.success("Banner principal atualizado!");
     },
-    onError: () => toast.error("Não foi possível salvar o banner principal."),
+    onError: () => toast.error("Nao foi possivel salvar o banner principal."),
   });
 
   const saveMutation = useMutation({
@@ -121,6 +128,11 @@ const AdminDashboard = () => {
           image_url: form.images[0] || null,
           images: form.images,
           sizes: parseSizes(form.sizes),
+          size_availability: syncSizeAvailabilityState(
+            form.sizes,
+            form.sizeAvailability,
+            form.availability
+          ),
           active: form.active,
           availability: form.availability,
         },
@@ -134,7 +146,7 @@ const AdminDashboard = () => {
       resetForm();
       setDialogOpen(false);
     },
-    onError: () => toast.error("Não foi possível salvar o produto."),
+    onError: () => toast.error("Nao foi possivel salvar o produto."),
   });
 
   const deleteMutation = useMutation({
@@ -144,21 +156,11 @@ const AdminDashboard = () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Produto removido!");
     },
-    onError: () => toast.error("Não foi possível remover o produto."),
+    onError: () => toast.error("Nao foi possivel remover o produto."),
   });
 
   const resetForm = () => {
-    setForm({
-      slug: "",
-      name: "",
-      description: "",
-      price: "",
-      category: "Leggings",
-      images: [],
-      sizes: "P, M, G",
-      active: true,
-      availability: "disponivel",
-    });
+    setForm(defaultFormState);
     setEditingProduct(null);
   };
 
@@ -172,6 +174,11 @@ const AdminDashboard = () => {
       category: product.category,
       images: product.images,
       sizes: product.sizes.join(", "),
+      sizeAvailability: normalizeSizeAvailability(
+        product.sizes,
+        product.size_availability,
+        product.availability
+      ),
       active: product.active,
       availability: product.availability,
     });
@@ -189,7 +196,7 @@ const AdminDashboard = () => {
       }));
       toast.success("Imagens do produto enviadas com sucesso.");
     } catch {
-      toast.error("Não foi possível carregar as imagens selecionadas.");
+      toast.error("Nao foi possivel carregar as imagens selecionadas.");
     }
   };
 
@@ -201,7 +208,7 @@ const AdminDashboard = () => {
       setHeroImages((current) => [...current, ...uploadedImages]);
       toast.success("Imagens do banner enviadas com sucesso.");
     } catch {
-      toast.error("Não foi possível carregar as imagens do banner.");
+      toast.error("Nao foi possivel carregar as imagens do banner.");
     }
   };
 
@@ -232,6 +239,7 @@ const AdminDashboard = () => {
       if (current.includes(DEFAULT_HERO_IMAGE)) {
         return moveItemToFront(current, current.indexOf(DEFAULT_HERO_IMAGE));
       }
+
       return [DEFAULT_HERO_IMAGE, ...current];
     });
   };
@@ -248,7 +256,11 @@ const AdminDashboard = () => {
   };
 
   if (authLoading) {
-    return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
+        Carregando...
+      </div>
+    );
   }
 
   if (!user) {
@@ -266,6 +278,8 @@ const AdminDashboard = () => {
       </div>
     );
   }
+
+  const parsedSizes = parseSizes(form.sizes);
 
   return (
     <div className="min-h-screen bg-background">
@@ -316,11 +330,11 @@ const AdminDashboard = () => {
 
             <div className="space-y-3 rounded-2xl border border-[#252525] bg-black/20 p-4">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#f0cf93]">
-                Boas práticas para o banner
+                Boas praticas para o banner
               </p>
               <p className="text-sm text-muted-foreground">
-                Use imagens verticais ou com bastante respiro lateral, boa iluminação e foco no
-                produto. Prefira no máximo 3 banners para manter a experiência fluida.
+                Use imagens verticais ou com bastante respiro lateral, boa iluminacao e foco no
+                produto. Prefira no maximo 3 banners para manter a experiencia fluida.
               </p>
               <Button onClick={() => saveSettingsMutation.mutate()} disabled={saveSettingsMutation.isPending}>
                 <ImagePlus className="mr-2 h-4 w-4" />
@@ -333,7 +347,7 @@ const AdminDashboard = () => {
           </div>
 
           <div className="mt-6 space-y-2">
-            <Label htmlFor="hero-description">Descrição do banner</Label>
+            <Label htmlFor="hero-description">Descricao do banner</Label>
             <Textarea
               id="hero-description"
               rows={4}
@@ -348,7 +362,7 @@ const AdminDashboard = () => {
               <div>
                 <p className="text-sm font-semibold text-foreground">Galeria do banner</p>
                 <p className="text-xs text-muted-foreground">
-                  A primeira imagem será exibida primeiro no carrossel da home.
+                  A primeira imagem sera exibida primeiro no carrossel da home.
                 </p>
               </div>
               <span className="text-xs uppercase tracking-[0.18em] text-[#f0cf93]">
@@ -378,7 +392,7 @@ const AdminDashboard = () => {
                           className="w-full"
                           onClick={() => setHeroCoverImage(index)}
                         >
-                          Trazer para o início
+                          Trazer para o inicio
                         </Button>
                       )}
 
@@ -406,9 +420,9 @@ const AdminDashboard = () => {
         <section>
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Catálogo de produtos</h2>
+              <h2 className="text-xl font-semibold text-foreground">Catalogo de produtos</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Cadastre slug da rota, galeria de imagens, descrição, tamanhos e disponibilidade.
+                Cadastre rota, galeria, descricao, tamanhos e a disponibilidade de cada tamanho.
               </p>
             </div>
 
@@ -421,13 +435,13 @@ const AdminDashboard = () => {
             >
               <DialogTrigger asChild>
                 <Button variant="secondary">
-                  <Plus className="mr-2 h-4 w-4" /> Novo Produto
+                  <Plus className="mr-2 h-4 w-4" /> Novo produto
                 </Button>
               </DialogTrigger>
 
               <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>{editingProduct ? "Editar Produto" : "Novo Produto"}</DialogTitle>
+                  <DialogTitle>{editingProduct ? "Editar produto" : "Novo produto"}</DialogTitle>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
@@ -453,7 +467,12 @@ const AdminDashboard = () => {
                       <Input
                         id="slug"
                         value={form.slug}
-                        onChange={(e) => setForm({ ...form, slug: slugifyProductName(e.target.value) })}
+                        onChange={(e) =>
+                          setForm((current) => ({
+                            ...current,
+                            slug: slugifyProductName(e.target.value),
+                          }))
+                        }
                         placeholder="legging-cintura-alta-preta"
                         required
                       />
@@ -461,25 +480,25 @@ const AdminDashboard = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">Descrição</Label>
+                    <Label htmlFor="description">Descricao</Label>
                     <Textarea
                       id="description"
                       rows={4}
                       value={form.description}
-                      onChange={(e) => setForm({ ...form, description: e.target.value })}
+                      onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))}
                     />
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-2">
-                      <Label htmlFor="price">Preço (R$)</Label>
+                      <Label htmlFor="price">Preco (R$)</Label>
                       <Input
                         id="price"
                         type="number"
                         step="0.01"
                         min="0"
                         value={form.price}
-                        onChange={(e) => setForm({ ...form, price: e.target.value })}
+                        onChange={(e) => setForm((current) => ({ ...current, price: e.target.value }))}
                         required
                       />
                     </div>
@@ -489,7 +508,7 @@ const AdminDashboard = () => {
                       <select
                         id="category"
                         value={form.category}
-                        onChange={(e) => setForm({ ...form, category: e.target.value })}
+                        onChange={(e) => setForm((current) => ({ ...current, category: e.target.value }))}
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       >
                         {CATEGORIES.map((category) => (
@@ -501,19 +520,24 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="availability">Tipo de venda</Label>
+                      <Label htmlFor="availability">Disponibilidade padrao</Label>
                       <select
                         id="availability"
                         value={form.availability}
                         onChange={(e) =>
-                          setForm({
-                            ...form,
+                          setForm((current) => ({
+                            ...current,
                             availability: e.target.value as ProductAvailability,
-                          })
+                            sizeAvailability: syncSizeAvailabilityState(
+                              current.sizes,
+                              current.sizeAvailability,
+                              e.target.value as ProductAvailability
+                            ),
+                          }))
                         }
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       >
-                        <option value="disponivel">Disponível</option>
+                        <option value="disponivel">Disponivel</option>
                         <option value="encomenda">Encomenda</option>
                       </select>
                     </div>
@@ -525,7 +549,17 @@ const AdminDashboard = () => {
                       <Input
                         id="sizes"
                         value={form.sizes}
-                        onChange={(e) => setForm({ ...form, sizes: e.target.value })}
+                        onChange={(e) =>
+                          setForm((current) => ({
+                            ...current,
+                            sizes: e.target.value,
+                            sizeAvailability: syncSizeAvailabilityState(
+                              e.target.value,
+                              current.sizeAvailability,
+                              current.availability
+                            ),
+                          }))
+                        }
                         placeholder="P, M, G, GG"
                       />
                     </div>
@@ -542,12 +576,52 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
+                  {parsedSizes.length > 0 && (
+                    <div className="space-y-3 rounded-2xl border border-[#252525] bg-black/20 p-4">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Disponibilidade por tamanho</p>
+                        <p className="text-xs text-muted-foreground">
+                          Deixe claro o que esta disponivel agora e o que sera produzido por encomenda.
+                        </p>
+                      </div>
+
+                      <div className="grid gap-3">
+                        {parsedSizes.map((size) => (
+                          <div
+                            key={size}
+                            className="grid gap-2 rounded-2xl border border-[#252525] bg-[#111]/70 p-3 sm:grid-cols-[96px_minmax(0,1fr)] sm:items-center"
+                          >
+                            <div className="rounded-xl bg-[#1a1a1a] px-3 py-2 text-center text-sm font-semibold text-foreground">
+                              {size}
+                            </div>
+                            <select
+                              value={form.sizeAvailability[size] || form.availability}
+                              onChange={(e) =>
+                                setForm((current) => ({
+                                  ...current,
+                                  sizeAvailability: {
+                                    ...current.sizeAvailability,
+                                    [size]: e.target.value as ProductAvailability,
+                                  },
+                                }))
+                              }
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                              <option value="disponivel">Disponivel agora</option>
+                              <option value="encomenda">Somente por encomenda</option>
+                            </select>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-3 rounded-2xl border border-[#252525] bg-black/20 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-foreground">Galeria anexada</p>
                         <p className="text-xs text-muted-foreground">
-                          A primeira imagem é usada como capa do produto.
+                          A primeira imagem e usada como capa do produto.
                         </p>
                       </div>
                       <span className="text-xs uppercase tracking-[0.18em] text-[#f0cf93]">
@@ -604,7 +678,7 @@ const AdminDashboard = () => {
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={form.active}
-                      onCheckedChange={(checked) => setForm({ ...form, active: checked })}
+                      onCheckedChange={(checked) => setForm((current) => ({ ...current, active: checked }))}
                     />
                     <Label>Produto ativo</Label>
                   </div>
@@ -622,58 +696,70 @@ const AdminDashboard = () => {
           ) : !products?.length ? (
             <div className="py-16 text-center text-muted-foreground">
               <p>Nenhum produto cadastrado ainda.</p>
-              <p className="mt-1 text-sm">Clique em "Novo Produto" para começar.</p>
+              <p className="mt-1 text-sm">Clique em "Novo produto" para comecar.</p>
             </div>
           ) : (
             <div className="grid gap-4">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 md:flex-row md:items-center"
-                >
-                  {product.image_url && (
-                    <img src={product.image_url} alt={product.name} className="h-24 w-24 rounded-2xl object-cover" />
-                  )}
+              {products.map((product) => {
+                const displayAvailability = getDisplayAvailability(
+                  product.availability,
+                  product.size_availability,
+                  product.sizes
+                );
 
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <h3 className="truncate font-medium text-foreground">{product.name}</h3>
-                      {!product.active && (
-                        <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                          Inativo
+                return (
+                  <div
+                    key={product.id}
+                    className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 md:flex-row md:items-center"
+                  >
+                    {product.image_url && (
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="h-24 w-24 rounded-2xl object-cover"
+                      />
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-2 flex flex-wrap items-center gap-2">
+                        <h3 className="truncate font-medium text-foreground">{product.name}</h3>
+                        {!product.active && (
+                          <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                            Inativo
+                          </span>
+                        )}
+                        <span className="rounded bg-secondary px-2 py-0.5 text-xs text-foreground">
+                          {getDisplayAvailabilityLabel(displayAvailability)}
                         </span>
-                      )}
-                      <span className="rounded bg-secondary px-2 py-0.5 text-xs text-foreground">
-                        {product.availability === "disponivel" ? "Disponível" : "Encomenda"}
-                      </span>
+                      </div>
+
+                      <p className="text-sm text-muted-foreground">
+                        /{product.slug} · {product.category} · R$ {Number(product.price).toFixed(2).replace(".", ",")}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {getSizeAvailabilitySummary(product)}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {product.images.length} imagem(ns) na galeria
+                      </p>
                     </div>
 
-                    <p className="text-sm text-muted-foreground">
-                      /{product.slug} · {product.category} · R$ {Number(product.price).toFixed(2).replace(".", ",")}
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {product.sizes.length > 0 ? `Tamanhos: ${product.sizes.join(", ")}` : "Sem tamanhos cadastrados"}
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {product.images.length} imagem(ns) na galeria
-                    </p>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(product)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteMutation.mutate(product.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(product)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => deleteMutation.mutate(product.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>

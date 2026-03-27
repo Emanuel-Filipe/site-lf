@@ -25,6 +25,7 @@ export type Database = {
           images: string[] | null
           name: string
           price: number
+          size_availability: Json | null
           sizes: string[] | null
           slug: string
           updated_at: string
@@ -41,6 +42,7 @@ export type Database = {
           images?: string[] | null
           name: string
           price: number
+          size_availability?: Json | null
           sizes?: string[] | null
           slug: string
           updated_at?: string
@@ -57,6 +59,7 @@ export type Database = {
           images?: string[] | null
           name?: string
           price?: number
+          size_availability?: Json | null
           sizes?: string[] | null
           slug?: string
           updated_at?: string
