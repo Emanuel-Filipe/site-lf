@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingBag, Minus, Plus, Trash2, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useCart } from "@/contexts/CartContext";
-
-const WHATSAPP_NUMBER = "5517991956191";
+import { getStoreSettings } from "@/lib/storeSettings";
 
 const CartDrawer = () => {
   const {
@@ -16,6 +16,13 @@ const CartDrawer = () => {
     totalPrice,
     checkoutWhatsApp,
   } = useCart();
+
+  const { data: settings } = useQuery({
+    queryKey: ["store-settings"],
+    queryFn: getStoreSettings,
+  });
+
+  const whatsappNumber = settings?.whatsappNumber || "5517991755566";
 
   return (
     <AnimatePresence>
@@ -144,7 +151,7 @@ const CartDrawer = () => {
                 </div>
 
                 <button
-                  onClick={() => checkoutWhatsApp(WHATSAPP_NUMBER)}
+                  onClick={() => checkoutWhatsApp(whatsappNumber)}
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25d366] py-3.5 text-sm font-semibold tracking-wider text-white transition-all hover:opacity-90 active:scale-[0.98]"
                 >
                   <MessageCircle className="h-5 w-5" />

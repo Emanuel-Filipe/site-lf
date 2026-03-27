@@ -6,18 +6,30 @@ export const DEFAULT_HERO_IMAGE = heroImage;
 export type StoreSettings = {
   heroImages: string[];
   heroDescription: string;
+  whatsappNumber: string;
+  instagramUrl: string;
+  storeTagline: string;
+  categories: string[];
 };
 
 type StoreSettingsRow = {
   id: string;
   hero_images: string[] | null;
   hero_description: string | null;
+  whatsapp_number: string | null;
+  instagram_url: string | null;
+  store_tagline: string | null;
+  categories: string[] | null;
 };
 
 const defaultSettings: StoreSettings = {
   heroImages: [DEFAULT_HERO_IMAGE],
   heroDescription:
     "Roupas fitness com caimento impecável, visual sofisticado e compra simples pelo WhatsApp.",
+  whatsappNumber: "5517991755566",
+  instagramUrl: "https://www.instagram.com/laismoda_fitness",
+  storeTagline: "Moda fitness com atitude",
+  categories: ["Conjuntos", "Tops", "Shorts", "Leggings", "Bodys", "Acessórios"],
 };
 
 const normalizeSettings = (row?: Partial<StoreSettingsRow> | null): StoreSettings => ({
@@ -26,12 +38,19 @@ const normalizeSettings = (row?: Partial<StoreSettingsRow> | null): StoreSetting
       ? row.hero_images.filter(Boolean)
       : defaultSettings.heroImages,
   heroDescription: row?.hero_description?.trim() || defaultSettings.heroDescription,
+  whatsappNumber: row?.whatsapp_number?.trim() || defaultSettings.whatsappNumber,
+  instagramUrl: row?.instagram_url?.trim() || defaultSettings.instagramUrl,
+  storeTagline: row?.store_tagline?.trim() || defaultSettings.storeTagline,
+  categories:
+    row?.categories && row.categories.length > 0
+      ? row.categories.filter(Boolean)
+      : defaultSettings.categories,
 });
 
 export const getStoreSettings = async () => {
   const { data, error } = await supabase
     .from("store_settings")
-    .select("id, hero_images, hero_description")
+    .select("id, hero_images, hero_description, whatsapp_number, instagram_url, store_tagline, categories")
     .eq("id", "main")
     .maybeSingle();
 
@@ -48,6 +67,10 @@ export const saveStoreSettings = async (settings: StoreSettings) => {
     id: "main",
     hero_images: settings.heroImages.filter(Boolean),
     hero_description: settings.heroDescription.trim() || defaultSettings.heroDescription,
+    whatsapp_number: settings.whatsappNumber.trim(),
+    instagram_url: settings.instagramUrl.trim(),
+    store_tagline: settings.storeTagline.trim(),
+    categories: settings.categories.filter(Boolean),
   };
 
   const { error } = await supabase.from("store_settings").upsert(normalized, { onConflict: "id" });

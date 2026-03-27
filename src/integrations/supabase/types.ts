@@ -73,6 +73,10 @@ export type Database = {
           hero_images: string[] | null
           id: string
           updated_at: string
+          whatsapp_number: string | null
+          instagram_url: string | null
+          store_tagline: string | null
+          categories: string[] | null
         }
         Insert: {
           created_at?: string
@@ -80,6 +84,10 @@ export type Database = {
           hero_images?: string[] | null
           id: string
           updated_at?: string
+          whatsapp_number?: string | null
+          instagram_url?: string | null
+          store_tagline?: string | null
+          categories?: string[] | null
         }
         Update: {
           created_at?: string
@@ -87,6 +95,10 @@ export type Database = {
           hero_images?: string[] | null
           id?: string
           updated_at?: string
+          whatsapp_number?: string | null
+          instagram_url?: string | null
+          store_tagline?: string | null
+          categories?: string[] | null
         }
         Relationships: []
       }

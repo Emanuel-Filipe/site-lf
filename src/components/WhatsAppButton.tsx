@@ -1,13 +1,21 @@
 import { MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { useCart } from "@/contexts/CartContext";
+import { getStoreSettings } from "@/lib/storeSettings";
 
-const WHATSAPP_NUMBER = "5517991956191";
 const WHATSAPP_MESSAGE = "Olá! Vim pelo site da Lais Fitness e gostaria de saber mais!";
 
 const WhatsAppButton = () => {
   const { isOpen } = useCart();
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+  
+  const { data: settings } = useQuery({
+    queryKey: ["store-settings"],
+    queryFn: getStoreSettings,
+  });
+
+  const whatsappNumber = settings?.whatsappNumber || "5517991755566";
+  const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 
   if (isOpen) return null;
 

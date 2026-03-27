@@ -35,7 +35,7 @@ import {
 import { uploadImagesToStorage } from "@/lib/storage";
 import { DEFAULT_HERO_IMAGE, getStoreSettings, saveStoreSettings } from "@/lib/storeSettings";
 
-const CATEGORIES = ["Conjuntos", "Leggings", "Tops", "Shorts"];
+
 
 const parseSizes = (value: string) =>
   value
@@ -76,7 +76,15 @@ const AdminDashboard = () => {
   const [editingProduct, setEditingProduct] = useState<StoreProduct | null>(null);
   const [heroImages, setHeroImages] = useState<string[]>([]);
   const [heroDescription, setHeroDescription] = useState("");
-  const [form, setForm] = useState(defaultFormState);
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [storeTagline, setStoreTagline] = useState("");
+  const [categories, setCategories] = useState<string[]>([]);
+  const [newCategory, setNewCategory] = useState("");
+  const [form, setForm] = useState({
+    ...defaultFormState,
+    category: "", // Will be set once categories are loaded
+  });
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["admin-products"],
@@ -94,6 +102,15 @@ const AdminDashboard = () => {
     if (!settingsData) return;
     setHeroImages(settingsData.heroImages);
     setHeroDescription(settingsData.heroDescription);
+    setWhatsappNumber(settingsData.whatsappNumber);
+    setInstagramUrl(settingsData.instagramUrl);
+    setStoreTagline(settingsData.storeTagline);
+    setCategories(settingsData.categories);
+    
+    // Set default category for form if not set
+    if (!form.category && settingsData.categories.length > 0) {
+      setForm(prev => ({ ...prev, category: settingsData.categories[0] }));
+    }
   }, [settingsData]);
 
   useEffect(() => {
@@ -107,6 +124,10 @@ const AdminDashboard = () => {
       await saveStoreSettings({
         heroImages,
         heroDescription,
+        whatsappNumber,
+        instagramUrl,
+        storeTagline,
+        categories,
       });
     },
     onSuccess: () => {
@@ -420,6 +441,119 @@ const AdminDashboard = () => {
           </div>
         </section>
 
+        <section className="rounded-3xl border border-[#252525] bg-[#141414] p-6">
+          <div className="mb-6 flex items-start gap-4">
+            <div className="rounded-2xl bg-[#1b1b1b] p-3 text-[#d4af6e]">
+              <Store className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Contatos & Categorias</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Gerencie como os clientes entram em contato e as categorias de produtos disponíveis.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div className="space-y-6">
+              <div className="space-y-4 rounded-2xl border border-[#252525] bg-black/20 p-5">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-[#d4af6e]">Redes Sociais & Contato</h3>
+                
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsapp">WhatsApp (apenas números com DDD)</Label>
+                    <Input
+                      id="whatsapp"
+                      value={whatsappNumber}
+                      onChange={(e) => setWhatsappNumber(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Ex: 5517991755566"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="instagram">URL do Instagram</Label>
+                    <Input
+                      id="instagram"
+                      value={instagramUrl}
+                      onChange={(e) => setInstagramUrl(e.target.value)}
+                      placeholder="https://www.instagram.com/seu.perfil"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="tagline">Slogan do Rodapé</Label>
+                    <Input
+                      id="tagline"
+                      value={storeTagline}
+                      onChange={(e) => setStoreTagline(e.target.value)}
+                      placeholder="Moda fitness com atitude"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Button 
+                onClick={() => saveSettingsMutation.mutate()} 
+                disabled={saveSettingsMutation.isPending}
+                className="w-full"
+              >
+                {saveSettingsMutation.isPending ? "Salvando..." : "Salvar Configurações de Contato"}
+              </Button>
+            </div>
+
+            <div className="space-y-4 rounded-2xl border border-[#252525] bg-black/20 p-5">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-[#d4af6e]">Gerenciar Categorias</h3>
+              
+              <div className="flex gap-2">
+                <Input
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  placeholder="Nova categoria..."
+                />
+                <Button 
+                  variant="secondary"
+                  onClick={() => {
+                    if (!newCategory.trim()) return;
+                    if (categories.includes(newCategory.trim())) {
+                      toast.error("Categoria já existe");
+                      return;
+                    }
+                    const updated = [...categories, newCategory.trim()];
+                    setCategories(updated);
+                    setNewCategory("");
+                    toast.success("Categoria adicionada à lista (salve para confirmar)");
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-2">
+                {categories.map((cat) => (
+                  <div 
+                    key={cat}
+                    className="flex items-center gap-2 rounded-full border border-[#2a2a2a] bg-[#1a1a1a] py-1 pl-3 pr-1"
+                  >
+                    <span className="text-sm">{cat}</span>
+                    <button
+                      onClick={() => {
+                        setCategories(categories.filter(c => c !== cat));
+                      }}
+                      className="rounded-full p-1 text-[#666] hover:bg-red-500/10 hover:text-red-500"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-xs text-muted-foreground pt-4 italic">
+                * As categorias removidas não excluem os produtos, mas eles ficarão "sem categoria" até serem editados. Lembre-se de SALVAR após alterar a lista.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <section>
           <div className="mb-6 flex items-center justify-between">
             <div>
@@ -514,7 +648,7 @@ const AdminDashboard = () => {
                         onChange={(e) => setForm((current) => ({ ...current, category: e.target.value }))}
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       >
-                        {CATEGORIES.map((category) => (
+                        {categories.map((category) => (
                           <option key={category} value={category}>
                             {category}
                           </option>

@@ -102,7 +102,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-80" />
 
           <div className="absolute left-3 top-3 flex flex-col gap-2">
-            <span className="rounded-full border border-[rgba(212,175,110,0.2)] bg-black/75 px-3 py-1 text-xs font-medium text-[#d4af6e] backdrop-blur-sm">
+            <span className="self-start rounded-full border border-[rgba(212,175,110,0.2)] bg-black/75 px-3 py-1 text-xs font-medium text-[#d4af6e] backdrop-blur-sm">
               {product.category}
             </span>
 
