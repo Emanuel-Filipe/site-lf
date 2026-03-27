@@ -5,9 +5,9 @@ const Footer = () => {
   return (
     <footer id="contato" className="bg-foreground py-12">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-          <div>
-            <div className="mb-3">
+        <div className="flex flex-col items-center justify-between gap-6 md:flex-row md:items-center">
+          <div className="text-center md:text-left">
+            <div className="mb-3 flex justify-center md:justify-start">
               <BrandLogo size="sm" />
             </div>
             <p className="text-sm text-primary-foreground/60">Moda fitness com atitude</p>

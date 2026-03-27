@@ -163,11 +163,11 @@ const ProductCard = ({ product }: { product: Product }) => {
             </p>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex gap-2 overflow-hidden">
             <button
               type="button"
               onClick={handleOpenProduct}
-              className="flex-1 rounded-xl border border-[#2a2a2a] px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0f0f0] transition-colors hover:border-[#c9956a] hover:text-[#d4af6e]"
+              className="flex-1 min-w-0 rounded-xl border border-[#2a2a2a] px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0f0f0] transition-colors hover:border-[#c9956a] hover:text-[#d4af6e]"
             >
               Ver produto
             </button>
@@ -175,7 +175,7 @@ const ProductCard = ({ product }: { product: Product }) => {
             <motion.button
               type="button"
               onClick={handleAddToCart}
-              className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-black sm:text-xs sm:tracking-[0.16em]"
+              className="flex flex-1 min-w-0 items-center justify-center gap-2 rounded-xl px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-black sm:tracking-[0.16em]"
               style={{
                 background: added ? "#25d366" : "linear-gradient(135deg, #c9956a, #d4af6e)",
               }}
@@ -183,8 +183,8 @@ const ProductCard = ({ product }: { product: Product }) => {
               animate={added ? { scale: [1, 1.05, 1] } : {}}
               initial={false}
             >
-              {added ? <Check className="h-4 w-4" /> : <ShoppingBag className="h-4 w-4" />}
-              <span>
+              {added ? <Check className="h-4 w-4 shrink-0" /> : <ShoppingBag className="h-4 w-4 shrink-0" />}
+              <span className="truncate">
                 {product.sizes.length > 0
                   ? "Escolher tamanho"
                   : product.displayAvailability === "encomenda"
