@@ -28,7 +28,7 @@
     --muted-foreground: 0 0% 50%;
 
     --primary: 38 55% 63%;
-    --primary-foreground: 0 0% 5%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 14%;
     --secondary-foreground: 0 0% 94%;
@@ -47,7 +47,7 @@
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 94%;
     --sidebar-primary: 38 55% 63%;
-    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 14%;
     --sidebar-accent-foreground: 0 0% 94%;
     --sidebar-border: 0 0% 16%;
@@ -62,6 +62,7 @@
 
   html {
     color-scheme: dark;
+    scroll-behavior: smooth;
   }
 
   body {

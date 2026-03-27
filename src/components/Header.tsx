@@ -25,13 +25,13 @@ const Header = () => {
 
         <nav className="hidden items-center gap-8 md:flex">
           {[
-            { label: "Produtos", href: "/produtos" },
-            { label: "Sobre", href: "/#sobre" },
-            { label: "Contato", href: "/#contato" },
+            { label: "Produtos", href: "#produtos" },
+            { label: "Sobre", href: "#sobre" },
+            { label: "Contato", href: "#contato" },
           ].map((item) => (
-            <Link
+            <a
               key={item.label}
-              to={item.href}
+              href={item.href}
               className="text-sm font-medium tracking-[0.22em] transition-colors"
               style={{ color: "#777" }}
               onMouseEnter={(e) => {
@@ -42,7 +42,7 @@ const Header = () => {
               }}
             >
               {item.label}
-            </Link>
+            </a>
           ))}
         </nav>
 
@@ -104,13 +104,13 @@ const Header = () => {
           >
             <nav className="flex flex-col gap-4 px-4 py-4">
               {[
-                { label: "Produtos", href: "/produtos" },
-                { label: "Sobre", href: "/#sobre" },
-                { label: "Contato", href: "/#contato" },
+                { label: "Produtos", href: "#produtos" },
+                { label: "Sobre", href: "#sobre" },
+                { label: "Contato", href: "#contato" },
               ].map((item) => (
-                <Link
+                <a
                   key={item.label}
-                  to={item.href}
+                  href={item.href}
                   onClick={() => setMenuOpen(false)}
                   className="text-sm font-medium tracking-[0.18em] transition-colors"
                   style={{ color: "#666" }}
@@ -122,7 +122,7 @@ const Header = () => {
                   }}
                 >
                   {item.label}
-                </Link>
+                </a>
               ))}
             </nav>
           </motion.div>

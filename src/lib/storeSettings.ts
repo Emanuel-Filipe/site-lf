@@ -23,7 +23,7 @@ type StoreSettingsRow = {
 };
 
 const defaultSettings: StoreSettings = {
-  heroImages: [DEFAULT_HERO_IMAGE],
+  heroImages: [DEFAULT_HERO_IMAGE, "https://images.unsplash.com/photo-1518310383802-640c2de311b2?q=80&w=1920&auto=format&fit=crop"],
   heroDescription:
     "Roupas fitness com caimento impecável, visual sofisticado e compra simples pelo WhatsApp.",
   whatsappNumber: "5517991755566",

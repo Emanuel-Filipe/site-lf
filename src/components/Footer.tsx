@@ -14,14 +14,14 @@ const Footer = () => {
   const tagline = settings?.storeTagline || "Moda fitness com atitude";
 
   return (
-    <footer className="border-t border-border bg-card/50 py-12 md:py-16">
+    <footer id="contato" className="border-t border-border bg-card/50 py-12 md:py-16">
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
           <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
             <Link to="/">
               <BrandLogo size="sm" />
             </Link>
-            <p className="max-w-[280px] text-sm text-muted-foreground">
+            <p className="max-w-[280px] text-sm text-foreground/80">
               {tagline}
             </p>
           </div>
@@ -31,13 +31,13 @@ const Footer = () => {
               href={instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary-foreground/60 transition-colors hover:text-accent"
+              className="text-foreground/70 transition-colors hover:text-[#d4af6e]"
             >
               <Instagram className="h-6 w-6" />
             </a>
             <Link
               to="/admin"
-              className="text-primary-foreground/60 transition-colors hover:text-accent"
+              className="text-foreground/70 transition-colors hover:text-[#d4af6e]"
             >
               <Send className="h-5 w-5" />
             </Link>
