@@ -3,6 +3,7 @@ import productTop1 from "@/assets/product-top-1.jpg";
 import productLegging2 from "@/assets/product-legging-2.jpg";
 import productConjunto1 from "@/assets/product-conjunto-1.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 export type ProductAvailability = "disponivel" | "encomenda";
 export type ProductDisplayAvailability = ProductAvailability | "misto";
@@ -56,11 +57,12 @@ export const slugifyProductName = (value: string) =>
 const createProduct = (
   partial: Omit<
     StoreProduct,
-    "slug" | "images" | "sizes" | "created_at" | "updated_at"
+    "slug" | "images" | "sizes" | "created_at" | "updated_at" | "size_availability"
   > & {
     slug?: string;
     images?: string[];
     sizes?: string[];
+    size_availability?: SizeAvailabilityMap;
   }
 ): StoreProduct => {
   const now = new Date().toISOString();
@@ -76,7 +78,7 @@ const createProduct = (
     slug: partial.slug || slugifyProductName(partial.name),
     images,
     sizes: partial.sizes || ["P", "M", "G"],
-    size_availability: {},
+    size_availability: partial.size_availability || {},
     created_at: now,
     updated_at: now,
   };
@@ -308,11 +310,25 @@ const mapRowToProduct = (row: ProductRow): StoreProduct =>
     size_availability: row.size_availability || {},
   });
 
-const normalizeInput = (product: StoreProductInput, id?: string) =>
-  normalizeProduct({
+const normalizeInput = (product: StoreProductInput, id?: string): StoreProduct => {
+  const finalId = id || crypto.randomUUID();
+  return normalizeProduct({
     ...product,
-    id: id || crypto.randomUUID(),
+    id: finalId,
   });
+};
+
+const formatProductPersistenceError = (error: PostgrestError) => {
+  const errorText = [error.message, error.details, error.hint].filter(Boolean).join(" ").toLowerCase();
+
+  if (errorText.includes("size_availability")) {
+    return new Error(
+      "O banco de dados ainda nao foi atualizado para a disponibilidade por tamanho. Rode a migration nova no Supabase e tente novamente."
+    );
+  }
+
+  return error;
+};
 
 const seedProductsInDatabase = async () => {
   const payload = seedProducts.map((product) => ({
@@ -386,30 +402,32 @@ export const getProductBySlug = async (slug: string) => {
 };
 
 export const saveProduct = async (product: StoreProductInput, id?: string) => {
-  const normalizedInput = normalizeInput(product, id);
+  const normalized = normalizeInput(product, id);
+
+  // Ensure price is a valid number and handle potential issues
+  if (isNaN(normalized.price)) {
+    throw new Error("O preço do produto é inválido.");
+  }
+
   const payload = {
-    id: id || normalizedInput.id,
-    slug: normalizedInput.slug,
-    name: normalizedInput.name,
-    description: normalizedInput.description,
-    price: normalizedInput.price,
-    category: normalizedInput.category,
-    image_url: normalizedInput.images[0] || normalizedInput.image_url || "/placeholder.svg",
-    images: normalizedInput.images,
-    sizes: normalizedInput.sizes,
-    size_availability: normalizeSizeAvailability(
-      normalizedInput.sizes,
-      normalizedInput.size_availability,
-      normalizedInput.availability
-    ),
-    active: normalizedInput.active,
-    availability: normalizedInput.availability,
+    id: normalized.id,
+    slug: normalized.slug,
+    name: normalized.name,
+    description: normalized.description,
+    price: normalized.price,
+    category: normalized.category,
+    image_url: normalized.image_url,
+    images: normalized.images,
+    sizes: normalized.sizes,
+    size_availability: normalized.size_availability,
+    active: normalized.active,
+    availability: normalized.availability,
   };
 
   const { error } = await supabase.from("products").upsert(payload, { onConflict: "id" });
 
   if (error) {
-    throw error;
+    throw formatProductPersistenceError(error);
   }
 };
 

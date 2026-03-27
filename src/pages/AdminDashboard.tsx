@@ -146,7 +146,10 @@ const AdminDashboard = () => {
       resetForm();
       setDialogOpen(false);
     },
-    onError: () => toast.error("Nao foi possivel salvar o produto."),
+    onError: (error: any) => {
+      console.error("Save product error:", error);
+      toast.error(error.message || "Nao foi possivel salvar o produto.");
+    },
   });
 
   const deleteMutation = useMutation({
