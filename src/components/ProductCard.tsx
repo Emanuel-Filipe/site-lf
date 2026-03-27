@@ -163,36 +163,28 @@ const ProductCard = ({ product }: { product: Product }) => {
             </p>
           </div>
 
-          <div className="flex gap-2 overflow-hidden">
-            <button
-              type="button"
-              onClick={handleOpenProduct}
-              className="flex-1 min-w-0 rounded-xl border border-[#2a2a2a] px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0f0f0] transition-colors hover:border-[#c9956a] hover:text-[#d4af6e]"
-            >
-              Ver produto
-            </button>
-
-            <motion.button
-              type="button"
-              onClick={handleAddToCart}
-              className="flex flex-1 min-w-0 items-center justify-center gap-2 rounded-xl px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-black sm:tracking-[0.16em]"
-              style={{
-                background: added ? "#25d366" : "linear-gradient(135deg, #c9956a, #d4af6e)",
-              }}
-              whileTap={{ scale: 0.96 }}
-              animate={added ? { scale: [1, 1.05, 1] } : {}}
-              initial={false}
-            >
-              {added ? <Check className="h-4 w-4 shrink-0" /> : <ShoppingBag className="h-4 w-4 shrink-0" />}
-              <span className="truncate">
-                {product.sizes.length > 0
+          <motion.button
+            type="button"
+            onClick={handleAddToCart}
+            className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-black transition-opacity hover:opacity-90"
+            style={{
+              background: added ? "#25d366" : "linear-gradient(135deg, #c9956a, #d4af6e)",
+            }}
+            whileTap={{ scale: 0.97 }}
+            animate={added ? { scale: [1, 1.05, 1] } : {}}
+            initial={false}
+          >
+            {added ? <Check className="h-4 w-4 shrink-0" /> : <ShoppingBag className="h-4 w-4 shrink-0" />}
+            <span className="truncate">
+              {added
+                ? "Adicionado!"
+                : product.sizes.length > 0
                   ? "Escolher tamanho"
                   : product.displayAvailability === "encomenda"
-                    ? "Encomendar"
-                    : "Adicionar"}
-              </span>
-            </motion.button>
-          </div>
+                    ? "Fazer encomenda"
+                    : "Adicionar ao carrinho"}
+            </span>
+          </motion.button>
         </div>
       </div>
     </motion.article>
