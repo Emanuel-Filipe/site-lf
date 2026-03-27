@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/contexts/CartContext";
 import BrandLogo from "@/components/BrandLogo";
-import ThemeToggle from "@/components/ThemeToggle";
+
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -47,7 +47,6 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <ThemeToggle />
 
           <button
             onClick={toggleCart}
@@ -104,11 +103,6 @@ const Header = () => {
             style={{ borderBottom: "1px solid #1e1e1e", background: "#0d0d0d" }}
           >
             <nav className="flex flex-col gap-4 px-4 py-4">
-              <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                <span className="text-xs uppercase tracking-[0.22em] text-[#9a8f7f]">Aparência</span>
-                <ThemeToggle />
-              </div>
-
               {[
                 { label: "Produtos", href: "/produtos" },
                 { label: "Sobre", href: "/#sobre" },
