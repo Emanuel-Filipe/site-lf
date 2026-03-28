@@ -91,7 +91,7 @@ const ProductCard = ({ product }: { product: Product }) => {
             <img
               key={`${image}-${index}`}
               src={image}
-              alt={product.name}
+              alt={`${product.name} - LaIs Fitness Moda Fitness Feminina`}
               loading="lazy"
               className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 ${
                 index === activeImageIndex ? "opacity-100 scale-100" : "opacity-0 scale-105"

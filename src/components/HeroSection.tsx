@@ -56,9 +56,9 @@ const HeroSection = () => {
             Moda fitness premium
           </div>
           <h1 className="mb-4 font-display text-4xl leading-[0.95] tracking-[0.06em] text-[#E5D3B3] sm:text-5xl md:text-8xl md:tracking-wider">
-            VISTA-SE
+            MODA FITNESS
             <br />
-            <span className="text-accent">DE ATITUDE</span>
+            <span className="text-accent underline decoration-[#c9956a]/30">FEMININA</span>
           </h1>
           <p className="mb-6 max-w-lg text-base font-light leading-7 text-[#FFF8E7]/80 sm:text-lg md:mb-8">
             {description}

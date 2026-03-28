@@ -21,8 +21,11 @@ const Footer = () => {
             <Link to="/">
               <BrandLogo size="sm" />
             </Link>
-            <p className="max-w-[280px] text-sm text-foreground/80">
-              {tagline}
+            <p className="max-w-[280px] text-sm text-foreground/80 lowercase">
+              {tagline} — moda fitness premium em mirassol/sp
+            </p>
+            <p className="text-[10px] uppercase tracking-widest text-foreground/40">
+              Mirassol • São José do Rio Preto • Região
             </p>
           </div>
 

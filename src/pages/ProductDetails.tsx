@@ -16,6 +16,7 @@ import {
 } from "@/lib/products";
 import { useCart } from "@/contexts/CartContext";
 import NotFound from "@/pages/NotFound";
+import SEOMetadata from "@/components/SEOMetadata";
 
 const WHATSAPP_NUMBER = "5511999999999";
 
@@ -110,6 +111,34 @@ const ProductDetails = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOMetadata 
+        title={`${product.name} | LaIs Fitness`}
+        description={`${product.name} - ${product.description || "Moda fitness feminina de alta qualidade disponível em Mirassol e região. Compre pelo WhatsApp."}`}
+        keywords={`${product.name}, ${product.category}, moda fitness, Mirassol, São José do Rio Preto, roupa de academia`}
+        image={images[0]}
+      />
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org/",
+          "@type": "Product",
+          "name": product.name,
+          "image": images,
+          "description": product.description,
+          "sku": product.id,
+          "brand": {
+            "@type": "Brand",
+            "name": "LaIs Fitness"
+          },
+          "offers": {
+            "@type": "Offer",
+            "url": window.location.href,
+            "priceCurrency": "BRL",
+            "price": product.price,
+            "availability": displayAvailability === "disponivel" ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+            "itemCondition": "https://schema.org/NewCondition"
+          }
+        })}
+      </script>
       <Header />
       <main className="container mx-auto px-4 pb-16 pt-24 sm:pb-20 sm:pt-28 md:pt-32">
         <div className="mb-6 hidden flex-wrap items-center gap-3 text-sm text-muted-foreground sm:flex md:mb-8">

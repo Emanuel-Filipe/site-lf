@@ -19,10 +19,11 @@ const AVAILABILITY_FILTERS: { label: string; value: "todos" | ProductAvailabilit
 
 type ProductGridProps = {
   mode?: "preview" | "catalog";
+  initialCategory?: string;
 };
 
-const ProductGrid = ({ mode = "catalog" }: ProductGridProps) => {
-  const [activeCategory, setActiveCategory] = useState("Todos");
+const ProductGrid = ({ mode = "catalog", initialCategory }: ProductGridProps) => {
+  const [activeCategory, setActiveCategory] = useState(initialCategory || "Todos");
   const [availabilityFilter, setAvailabilityFilter] = useState<"todos" | ProductAvailability>("todos");
 
   const { data = [] } = useQuery({
